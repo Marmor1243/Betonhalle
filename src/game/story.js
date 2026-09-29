@@ -97,6 +97,13 @@ function completeStage(stage) {
   }
 }
 
+export function missionPOI() {
+  if (!mission) return null;
+  const stage = mission.stages[mission.idx];
+  if (stage && stage.type === 'capture' && mission.active) return { x: stage.point.x, z: stage.point.z, r: stage.radius };
+  return null;
+}
+
 export function missionStatusText() {
   if (!mission) return '';
   const stage = mission.stages[mission.idx];

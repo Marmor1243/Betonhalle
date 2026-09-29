@@ -16,6 +16,11 @@
 
   <div id="hud" hidden>
     <div id="top"><span class="lbl" id="topLbl">Welle</span><b id="waveN">1</b><span class="sub" id="botsLeft">–</span></div>
+    <div id="minimap"><canvas id="minimapCv" width="200" height="200"></canvas><span id="minimapHint">Tab · Karte</span></div>
+    <div id="bigmap" hidden>
+      <canvas id="bigmapCv" width="640" height="640"></canvas>
+      <span id="bigmapHint">Tab schließt die Karte</span>
+    </div>
     <div id="stats">
       <div><span class="lbl">Punkte</span><b id="score">0</b></div>
       <div><span class="lbl">Kills</span><b id="kills">0</b></div>
@@ -52,6 +57,7 @@
         <div><kbd>Leer</kbd> Springen</div>
         <div><kbd>Shift</kbd> Sprinten</div>
         <div><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> Zielen ohne Maus</div>
+        <div><kbd>Tab</kbd> Karte</div>
         <div><kbd>Esc</kbd> Pause / Hauptmenü</div>
       </div>
       <div class="keys" id="keysTouch" hidden>

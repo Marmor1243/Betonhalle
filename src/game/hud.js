@@ -1,6 +1,7 @@
 import { $, clamp } from '../core/utils.js';
 import { S, P, aliveCount } from './state.js';
 import { missionStatusText } from './story.js';
+import { drawMinimap } from './minimap.js';
 
 const hudCache = {};
 function setT(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
@@ -51,4 +52,5 @@ export function updateHUD() {
   const since = S.time - S.lastHurt;
   const lowPulse = hp <= 30 ? .25 + Math.sin(S.time * 5) * .1 : 0;
   $('vignette').style.opacity = String(Math.max(clamp(1 - since * 1.8, 0, 1) * .8, lowPulse));
+  drawMinimap();
 }

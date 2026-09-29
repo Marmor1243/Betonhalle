@@ -3,6 +3,7 @@ import { canvas } from '../render/renderer.js';
 import { S, P, sens } from './state.js';
 import { startReload } from './combat.js';
 import { pause, resumePlay } from './flow.js';
+import { toggleBigMap } from './minimap.js';
 
 export const keys = {};
 export let mouseDown = false, touchFire = false;
@@ -20,6 +21,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (S.mode === 'play') {
     if (e.code === 'KeyR') startReload();
+    if (e.code === 'Tab') { e.preventDefault(); toggleBigMap(); }
     if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
     if ((e.code === 'Escape' || e.code === 'KeyP') && noLock) pause();
   }

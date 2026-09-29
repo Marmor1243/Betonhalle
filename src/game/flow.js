@@ -8,11 +8,12 @@ import { pickups } from './pickups.js';
 import { setupDecor } from './menu.js';
 import { startMission1 } from './story.js';
 import { requestLock, stopInput, noLock } from './input.js';
+import { closeBigMap } from './minimap.js';
 
 function show(id, on) { $(id).hidden = !on; }
 
 function startPlay(type) {
-  initAudio(); resetGame();
+  initAudio(); resetGame(); closeBigMap();
   S.gameType = type;
   if (type === 'story') startMission1();
   S.mode = 'play';
@@ -32,7 +33,7 @@ export function pause() {
 export function resumePlay() { S.mode = 'play'; show('ovPause', false); show('touch', isTouch); initAudio(); }
 
 export function gameOver() {
-  S.mode = 'over'; stopInput();
+  S.mode = 'over'; stopInput(); closeBigMap();
   if (document.pointerLockElement) document.exitPointerLock();
   $('rWave').textContent = S.wave; $('rKills').textContent = S.kills;
   $('rScore').textContent = S.score.toLocaleString('de-DE');
@@ -49,7 +50,7 @@ export function goMenu() {
   if (document.pointerLockElement) document.exitPointerLock();
   for (const b of bots) scene.remove(b.g); bots.length = 0;
   for (const p of pickups) scene.remove(p.g); pickups.length = 0;
-  stopInput();
+  stopInput(); closeBigMap();
   S.mode = 'menu';
   buildWaveArena();
   show('hud', false); show('touch', false); show('ovPause', false); show('ovOver', false); show('ovStart', true);

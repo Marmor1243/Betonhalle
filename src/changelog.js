@@ -35,5 +35,14 @@ export const CHANGELOG = [
       'Capture Point: Ring auf dem Boden halten, während Verstärkung nachrückt; verlässt man den Ring, setzt sich die Zeit zurück.',
       'Gegner-Schwierigkeit in der Mission spürbar angehoben.'
     ]
+  },
+  {
+    date: '29.09.2026',
+    title: 'Minimap & Kartenansicht',
+    items: [
+      'Neue Minimap oben rechts: dreht sich mit der Blickrichtung, zeigt Wände/Deckung und Gegner in der Nähe.',
+      'Gegner außerhalb der Minimap-Reichweite werden als roter Punkt am Kartenrand in ihrer echten Richtung angezeigt.',
+      'Taste Tab öffnet eine nordausgerichtete Vogelperspektive der gesamten Karte inkl. Kontrollpunkt im Story-Modus.'
+    ]
   }
 ];
