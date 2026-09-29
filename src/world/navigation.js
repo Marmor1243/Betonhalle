@@ -1,10 +1,16 @@
 import { clamp } from '../core/utils.js';
-import { boxes } from './arena.js';
+import { boxes } from './level.js';
 
+// Festes 80x80m-Raster (1m-Zellen), zentriert um den Ursprung - reicht für die
+// Wellen-Arena UND kleine, um den Ursprung gebaute Story-Level. Wird nach jedem
+// Level-Wechsel (Wellen-Arena <-> Mission) über rebuildNavGrid() neu berechnet.
 const N = 80, OFF = 40, blocked = new Uint8Array(N * N);
-for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
-  const x = -OFF + i + .5, z = -OFF + j + .5;
-  for (const b of boxes) if (x > b.min[0] - .6 && x < b.max[0] + .6 && z > b.min[2] - .6 && z < b.max[2] + .6) { blocked[i + j * N] = 1; break; }
+export function rebuildNavGrid() {
+  blocked.fill(0);
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const x = -OFF + i + .5, z = -OFF + j + .5;
+    for (const b of boxes) if (x > b.min[0] - .6 && x < b.max[0] + .6 && z > b.min[2] - .6 && z < b.max[2] + .6) { blocked[i + j * N] = 1; break; }
+  }
 }
 const cellOf = (x, z) => [clamp(Math.floor(x + OFF), 0, N - 1), clamp(Math.floor(z + OFF), 0, N - 1)];
 function nearestFree(ci, cj) {

@@ -6,9 +6,11 @@ import { S } from './game/state.js';
 import { update } from './game/update.js';
 import { attract, setupDecor } from './game/menu.js';
 import { renderChangelog } from './game/changelog.js';
+import { buildWaveArena } from './world/arena.js';
 import './game/flow.js';
 import './game/input.js';
 
+buildWaveArena();
 setupDecor();
 renderChangelog();
 

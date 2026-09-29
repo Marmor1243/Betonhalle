@@ -1,5 +1,6 @@
 import { $, clamp } from '../core/utils.js';
 import { S, P, aliveCount } from './state.js';
+import { missionStatusText } from './story.js';
 
 const hudCache = {};
 function setT(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
@@ -24,9 +25,14 @@ export function spreadNow(moving) {
   return S.ads ? base * .35 : base;
 }
 export function updateHUD() {
-  setT('waveN', String(S.wave || 1));
-  const left = S.toSpawn + aliveCount();
-  setT('botsLeft', S.intermission > 0 ? 'Pause zwischen den Wellen' : left === 1 ? '1 Bot übrig' : left + ' Bots übrig');
+  if (S.gameType === 'story') {
+    setT('topLbl', 'Mission'); setT('waveN', '');
+    setT('botsLeft', missionStatusText());
+  } else {
+    setT('topLbl', 'Welle'); setT('waveN', String(S.wave || 1));
+    const left = S.toSpawn + aliveCount();
+    setT('botsLeft', S.intermission > 0 ? 'Pause zwischen den Wellen' : left === 1 ? '1 Bot übrig' : left + ' Bots übrig');
+  }
   setT('score', S.score.toLocaleString('de-DE'));
   setT('kills', String(S.kills));
   const hp = Math.max(0, Math.ceil(S.hp));

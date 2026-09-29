@@ -10,6 +10,7 @@ import { fire, startReload } from './combat.js';
 import { bots, updateBot } from './bots.js';
 import { pickups } from './pickups.js';
 import { feed, banner, updateHUD } from './hud.js';
+import { storyTick } from './story.js';
 
 let currentFov = BASE_FOV;
 let adsT = 0;
@@ -99,8 +100,10 @@ export function update(dt) {
   for (let i = bots.length - 1; i >= 0; i--) if (bots[i]) updateBot(bots[i], dt);
   if (S.mode !== 'play') return;
 
-  // Wellen
-  if (S.intermission > 0) { S.intermission -= dt; if (S.intermission <= 0) startWave(S.wave + 1); }
+  // Wellen (nur im Wellen-Modus) bzw. Missionslogik (Story-Modus)
+  if (S.gameType === 'story') {
+    storyTick();
+  } else if (S.intermission > 0) { S.intermission -= dt; if (S.intermission <= 0) startWave(S.wave + 1); }
   else {
     S.spawnT -= dt;
     if (S.toSpawn > 0 && aliveCount() < S.maxAlive && S.spawnT <= 0) { if (spawnBot()) S.toSpawn--; S.spawnT = rand(.9, 1.8); }

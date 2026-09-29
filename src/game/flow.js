@@ -1,20 +1,26 @@
 import { $, isTouch, store } from '../core/utils.js';
 import { initAudio } from '../core/audio.js';
 import { scene } from '../render/scene.js';
+import { buildWaveArena } from '../world/arena.js';
 import { S, resetGame, getBest, showBest } from './state.js';
 import { bots } from './bots.js';
 import { pickups } from './pickups.js';
 import { setupDecor } from './menu.js';
+import { startMission1 } from './story.js';
 import { requestLock, stopInput, noLock } from './input.js';
 
 function show(id, on) { $(id).hidden = !on; }
 
-export function beginGame() {
+function startPlay(type) {
   initAudio(); resetGame();
+  S.gameType = type;
+  if (type === 'story') startMission1();
   S.mode = 'play';
   show('ovStart', false); show('ovOver', false); show('ovPause', false); show('hud', true); show('touch', isTouch);
   requestLock();
 }
+export function beginGame() { startPlay('waves'); }
+export function beginStory() { startPlay('story'); }
 
 export function pause() {
   if (S.mode !== 'play') return;
@@ -45,12 +51,14 @@ export function goMenu() {
   for (const p of pickups) scene.remove(p.g); pickups.length = 0;
   stopInput();
   S.mode = 'menu';
+  buildWaveArena();
   show('hud', false); show('touch', false); show('ovPause', false); show('ovOver', false); show('ovStart', true);
   setupDecor(); showBest();
 }
 
 $('btnStart').addEventListener('click', beginGame);
-$('btnAgain').addEventListener('click', beginGame);
+$('btnStory').addEventListener('click', beginStory);
+$('btnAgain').addEventListener('click', () => startPlay(S.gameType || 'waves'));
 $('btnResume').addEventListener('click', () => { if (noLock) resumePlay(); else requestLock(); });
 $('btnMenu').addEventListener('click', goMenu);
 $('btnMenu2').addEventListener('click', goMenu);

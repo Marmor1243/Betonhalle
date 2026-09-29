@@ -17,5 +17,14 @@ export const CHANGELOG = [
       'Beim Zielen engere Streuung, aber langsamere Bewegung.',
       'Zielen wird im Sprung unterbrochen und erst nach der Landung wieder aktiv.'
     ]
+  },
+  {
+    date: '29.09.2026',
+    title: 'Story-Modus (Testmission)',
+    items: [
+      'Neuer Spielmodus neben dem Wellen-Modus: kurze, lineare Missionen statt endloser Arena.',
+      'Erste Testmission: Korridor mit Deckung, der in einen Raum mit Gegner-Hinterhalt mündet.',
+      'Missionsziel im HUD sichtbar, automatische Rückkehr ins Hauptmenü nach Abschluss.'
+    ]
   }
 ];

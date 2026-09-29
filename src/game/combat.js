@@ -60,7 +60,7 @@ function damageBot(b, dmg, head) {
   if (b.hp <= 0) {
     b.dead = true; b.deathT = 0; b.flashMesh.visible = false;
     S.kills++; if (head) S.heads++;
-    const pts = 100 + (head ? 50 : 0) + (S.wave - 1) * 10;
+    const pts = 100 + (head ? 50 : 0) + Math.max(0, S.wave - 1) * 10;
     S.score += pts;
     feed(`${b.name} ausgeschaltet${head ? ' · Kopfschuss' : ''}  +${pts}`, head);
     emit(new V3(b.x, 1.3, b.z), new V3(0, 1, 0), 40, 0xff5a30, 5, .9);

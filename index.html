@@ -15,7 +15,7 @@
   <div id="vignette"></div>
 
   <div id="hud" hidden>
-    <div id="top"><span class="lbl">Welle</span><b id="waveN">1</b><span class="sub" id="botsLeft">–</span></div>
+    <div id="top"><span class="lbl" id="topLbl">Welle</span><b id="waveN">1</b><span class="sub" id="botsLeft">–</span></div>
     <div id="stats">
       <div><span class="lbl">Punkte</span><b id="score">0</b></div>
       <div><span class="lbl">Kills</span><b id="kills">0</b></div>
@@ -60,7 +60,10 @@
         <div>Feuer halten: schießen</div>
       </div>
       <div class="row">
-        <button class="btn" id="btnStart" type="button">Einsatz starten</button>
+        <button class="btn" id="btnStart" type="button">Wellen-Modus</button>
+        <button class="btn ghost" id="btnStory" type="button">Story (Test)</button>
+      </div>
+      <div class="row">
         <label class="sens" for="sens">Maus-Empfindlichkeit <input id="sens" type="range" min="0.5" max="3" step="0.1" value="1.2"></label>
       </div>
       <div class="best" id="bestLine">Noch kein Bestwert.</div>

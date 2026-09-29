@@ -1,5 +1,5 @@
 import { V3, clamp } from '../core/utils.js';
-import { boxes } from './arena.js';
+import { boxes } from './level.js';
 
 export function resolveCircle(p, r, feetY, stepH) {
   for (let it = 0; it < 2; it++) for (const b of boxes) {
