@@ -102,7 +102,7 @@ export function update(dt) {
 
   // Wellen (nur im Wellen-Modus) bzw. Missionslogik (Story-Modus)
   if (S.gameType === 'story') {
-    storyTick();
+    storyTick(dt);
   } else if (S.intermission > 0) { S.intermission -= dt; if (S.intermission <= 0) startWave(S.wave + 1); }
   else {
     S.spawnT -= dt;

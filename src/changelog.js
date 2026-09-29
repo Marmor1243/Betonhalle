@@ -26,5 +26,14 @@ export const CHANGELOG = [
       'Erste Testmission: Korridor mit Deckung, der in einen Raum mit Gegner-Hinterhalt mündet.',
       'Missionsziel im HUD sichtbar, automatische Rückkehr ins Hauptmenü nach Abschluss.'
     ]
+  },
+  {
+    date: '29.09.2026',
+    title: 'Story-Modus: Missionsstufen & Capture Point',
+    items: [
+      'Testmission um eine zweite Stufe erweitert: verriegelte Tür nach der ersten Kill Zone, dahinter ein Kontrollpunkt.',
+      'Capture Point: Ring auf dem Boden halten, während Verstärkung nachrückt; verlässt man den Ring, setzt sich die Zeit zurück.',
+      'Gegner-Schwierigkeit in der Mission spürbar angehoben.'
+    ]
   }
 ];

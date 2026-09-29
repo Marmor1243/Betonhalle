@@ -33,7 +33,7 @@ export function resetGame() {
   banner('Bereit machen', 'Welle 1 startet gleich');
 }
 
-function diffFor(n) {
+export function diffFor(n) {
   return { acc: Math.min(.26 + n * .05, .72), dmg: Math.min(7 + n * .8, 15), fireInt: Math.max(1 - n * .055, .45), speed: Math.min(3.4 + n * .2, 5.6), react: Math.max(.75 - n * .05, .25), hp: 100 + Math.max(0, n - 4) * 15 };
 }
 export function startWave(n) {

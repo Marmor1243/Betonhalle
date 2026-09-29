@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { matLamp } from '../render/textures.js';
 import { clearLevel, addBox, rot4, quad, addFloor, addDecor } from './level.js';
-import { rebuildNavGrid } from './navigation.js';
+import { setNavBounds, rebuildNavGrid } from './navigation.js';
 
 export function buildWaveArena() {
   clearLevel();
+  setNavBounds(-40, 40, -40, 40);
   addFloor(82, 82, 0, 0);
   const ring = new THREE.Mesh(new THREE.RingGeometry(9.2, 9.6, 64), new THREE.MeshBasicMaterial({ color: 0xc9621c, transparent: true, opacity: .45 }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = .012; addDecor(ring);

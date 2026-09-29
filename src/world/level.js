@@ -29,7 +29,19 @@ export function addBox(x, z, w, d, h, kind) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, h / 2, z); m.castShadow = true; m.receiveShadow = true;
   addDecor(m);
-  boxes.push({ min: [x - w / 2, 0, z - d / 2], max: [x + w / 2, h, z + d / 2], h });
+  const entry = { min: [x - w / 2, 0, z - d / 2], max: [x + w / 2, h, z + d / 2], h };
+  boxes.push(entry);
+  return { mesh: m, entry };
+}
+// Entfernt eine per addBox() gebaute Sperre wieder (z.B. eine Tür, die erst
+// nach Abschluss einer Missionsstufe aufgeht). Ruft danach rebuildNavGrid()
+// selbst NICHT auf - das macht der Aufrufer, da meist mehrere Dinge auf einmal
+// entfernt/hinzugefügt werden.
+export function removeBox(handle) {
+  if (!handle) return;
+  scene.remove(handle.mesh);
+  const mi = levelMeshes.indexOf(handle.mesh); if (mi >= 0) levelMeshes.splice(mi, 1);
+  const bi = boxes.indexOf(handle.entry); if (bi >= 0) boxes.splice(bi, 1);
 }
 export function rot4(x, z, w, d, h, k) { addBox(x, z, w, d, h, k); addBox(-z, x, d, w, h, k); addBox(-x, -z, w, d, h, k); addBox(z, -x, d, w, h, k); }
 export function quad(x, z, w, d, h, k) { addBox(x, z, w, d, h, k); addBox(-x, z, w, d, h, k); addBox(x, -z, w, d, h, k); addBox(-x, -z, w, d, h, k); }
