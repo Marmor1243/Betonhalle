@@ -1,0 +1,28 @@
+{
+  "name": "betonhalle",
+  "version": "1.0.0",
+  "description": "Arena-Shooter: Wellen gegen Bots",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marmor1243/Betonhalle.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Marmor1243/Betonhalle/issues"
+  },
+  "homepage": "https://github.com/Marmor1243/Betonhalle#readme",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1"
+  }
+}

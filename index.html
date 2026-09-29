@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Betonhalle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+</head>
+<body>
+
+<div id="app">
+  <canvas id="c"></canvas>
+  <div id="vignette"></div>
+
+  <div id="hud" hidden>
+    <div id="top"><span class="lbl">Welle</span><b id="waveN">1</b><span class="sub" id="botsLeft">–</span></div>
+    <div id="stats">
+      <div><span class="lbl">Punkte</span><b id="score">0</b></div>
+      <div><span class="lbl">Kills</span><b id="kills">0</b></div>
+    </div>
+    <div id="feed"></div>
+    <div id="xhair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="dot"></i></div>
+    <div id="hitm"></div>
+    <div id="dmgring"></div>
+    <div id="health"><span class="lbl">Gesundheit</span><b id="hpN">100</b><div class="bar"><div id="hpBar" style="width:100%"></div></div></div>
+    <div id="ammo"><b id="ammoN">30</b><span class="of">/ 30</span><span class="lbl" id="ammoLbl">Magazin</span><div class="bar"><div id="reloadBar"></div></div></div>
+    <div id="banner"><b id="bannerT"></b><span id="bannerS"></span></div>
+  </div>
+
+  <div id="touch" hidden>
+    <div id="stick"><div id="knob"></div></div>
+    <button id="tFire" type="button">Feuer</button>
+    <button id="tJump" type="button">Sprung</button>
+    <button id="tReload" type="button">R</button>
+  </div>
+
+  <div class="overlay" id="ovStart">
+    <div class="card">
+      <span class="eyebrow">Arena-Shooter · Wellen gegen Bots</span>
+      <h1>Beton&shy;halle</h1>
+      <p>Eine Halle aus Sichtbeton, 80 × 80 Meter, Kisten und Pfeiler als Deckung. Jede Welle schickt mehr Bots, und sie zielen besser, je länger du durchhältst. Kopfschüsse zählen fast dreifach.</p>
+      <div class="keys" id="keysDesk">
+        <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Bewegen</div>
+        <div><kbd>Maus</kbd> Zielen</div>
+        <div><kbd>Klick</kbd> Schießen</div>
+        <div><kbd>R</kbd> Nachladen</div>
+        <div><kbd>Leer</kbd> Springen</div>
+        <div><kbd>Shift</kbd> Sprinten</div>
+        <div><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> Zielen ohne Maus</div>
+        <div><kbd>Esc</kbd> Pause / Hauptmenü</div>
+      </div>
+      <div class="keys" id="keysTouch" hidden>
+        <div>Linke Hälfte ziehen: bewegen</div>
+        <div>Rechte Hälfte ziehen: zielen</div>
+        <div>Feuer halten: schießen</div>
+      </div>
+      <div class="row">
+        <button class="btn" id="btnStart" type="button">Einsatz starten</button>
+        <label class="sens" for="sens">Maus-Empfindlichkeit <input id="sens" type="range" min="0.5" max="3" step="0.1" value="1.2"></label>
+      </div>
+      <div class="best" id="bestLine">Noch kein Bestwert.</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ovPause" hidden>
+    <div class="card">
+      <span class="eyebrow">Pausiert</span>
+      <h2>Pause</h2>
+      <div class="row"><button class="btn" id="btnResume" type="button">Weiter</button><button class="btn ghost" id="btnMenu" type="button">Hauptmenü</button><button class="btn ghost" id="btnQuit" type="button">Aufgeben</button></div>
+      <span class="hint" id="pauseHint">Klick auf „Weiter“ fängt die Maus wieder ein.</span>
+    </div>
+  </div>
+
+  <div class="overlay" id="ovOver" hidden>
+    <div class="card">
+      <span class="eyebrow">Einsatz beendet</span>
+      <h2>Ausgeschaltet</h2>
+      <span class="newbest" id="newBest" hidden>Neuer Bestwert</span>
+      <div class="results">
+        <div><span class="lbl">Welle</span><b id="rWave">0</b></div>
+        <div><span class="lbl">Kills</span><b id="rKills">0</b></div>
+        <div><span class="lbl">Punkte</span><b id="rScore">0</b></div>
+        <div><span class="lbl">Treffer</span><b id="rAcc">0%</b></div>
+        <div><span class="lbl">Kopfschüsse</span><b id="rHs">0</b></div>
+      </div>
+      <div class="row"><button class="btn" id="btnAgain" type="button">Nochmal</button><button class="btn ghost" id="btnMenu2" type="button">Hauptmenü</button></div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
