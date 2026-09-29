@@ -25,4 +25,25 @@ export const gBase = new V3(.24, -.22, -.5);
 
 export const gunFlash = new THREE.Mesh(new THREE.PlaneGeometry(.26, .26), new THREE.MeshBasicMaterial({ map: flashTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
 gunFlash.position.set(0, .01, -.72); gunFlash.visible = false; gunRoot.add(gunFlash);
+
+// Kimme/Korn-Ersatz: kleines Rotpunktvisier, oben auf der Waffe montiert.
+// Das Fenster in der Mitte des Rahmens hat KEINE Geometrie ("Loch") - man sieht
+// durch die Lücke hindurch die eigentliche Szene, der rote Punkt sitzt davor.
+export const SIGHT_OFFSET = new V3(0, .11, -.05);
+(() => {
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x1c1e22, roughness: .5, metalness: .6 });
+  const sight = new THREE.Group(); sight.position.copy(SIGHT_OFFSET); gunRoot.add(sight);
+  const HOLE_W = .09, HOLE_H = .055, THICK = .009, OUT_W = HOLE_W + THICK * 2, OUT_H = HOLE_H + THICK * 2;
+  const bar = (w, h, x, y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, .012), frameMat); m.position.set(x, y, 0); sight.add(m); };
+  bar(OUT_W, THICK, 0, HOLE_H / 2 + THICK / 2);
+  bar(OUT_W, THICK, 0, -(HOLE_H / 2 + THICK / 2));
+  bar(THICK, OUT_H, -(HOLE_W / 2 + THICK / 2), 0);
+  bar(THICK, OUT_H, HOLE_W / 2 + THICK / 2, 0);
+  const post = new THREE.Mesh(new THREE.BoxGeometry(.018, .03, .018), frameMat);
+  post.position.set(0, -.062, .015); sight.add(post);
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0xff3b30 });
+  const dot = new THREE.Mesh(new THREE.CircleGeometry(.001, 16), dotMat);
+  dot.position.set(0, 0, .004); sight.add(dot);
+})();
+
 gunRoot.position.copy(gBase);

@@ -31,6 +31,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidd
 #xhair .t,#xhair .b{width:2px;height:9px;left:-1px}
 #xhair .l,#xhair .r{height:2px;width:9px;top:-1px}
 #xhair .dot{width:2px;height:2px;left:-1px;top:-1px;background:var(--sodium)}
+#xhair.ads{opacity:0}
 #hitm{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;opacity:0}
 #hitm::before,#hitm::after{content:"";position:absolute;left:12px;top:0;width:2px;height:26px;background:var(--ink);transform:rotate(45deg);
   -webkit-mask:linear-gradient(#000 0 35%,transparent 35% 65%,#000 65%);mask:linear-gradient(#000 0 35%,transparent 35% 65%,#000 65%)}

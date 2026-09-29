@@ -1,18 +1,28 @@
 import { V3, clamp, rand, isTouch } from '../core/utils.js';
-import { scene, camera, muzzleLight } from '../render/scene.js';
-import { gunRoot, gBase, gunFlash } from '../render/weapon.js';
+import { scene, camera, muzzleLight, BASE_FOV, ADS_FOV } from '../render/scene.js';
+import { gunRoot, gBase, gunFlash, SIGHT_OFFSET } from '../render/weapon.js';
 import { resolveCircle } from '../world/collision.js';
 import { emit } from '../render/particles.js';
 import { sfx } from '../core/audio.js';
 import { S, P, sens, startWave, spawnBot, aliveCount } from './state.js';
-import { keys, joy, mouseDown, touchFire, consumeMouseDelta } from './input.js';
+import { keys, joy, mouseDown, touchFire, aimHeld, consumeMouseDelta } from './input.js';
 import { fire, startReload } from './combat.js';
 import { bots, updateBot } from './bots.js';
 import { pickups } from './pickups.js';
 import { feed, banner, updateHUD } from './hud.js';
 
+let currentFov = BASE_FOV;
+let adsT = 0;
+// Zielposition der Waffe: das Visier (SIGHT_OFFSET) landet exakt in der Bildmitte,
+// in ADS_EYE_Z Metern vor der Kamera - nicht der Waffenkörper selbst.
+const ADS_EYE_Z = -.28;
+const ADS_POS = new V3(-SIGHT_OFFSET.x, -SIGHT_OFFSET.y, ADS_EYE_Z - SIGHT_OFFSET.z);
+
 export function update(dt) {
   S.time += dt;
+  // Zielen (ADS) nur am Boden möglich - in der Luft automatisch unterbrochen,
+  // erst nach der Landung (auch bei weiterhin gedrückter Taste) wieder aktiv.
+  S.ads = aimHeld && P.onGround;
   // Zielen per Pfeiltasten
   const lx = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0), ly = (keys.ArrowUp ? 1 : 0) - (keys.ArrowDown ? 1 : 0);
   if (lx || ly) { P.yaw -= lx * 2.2 * sens * dt; P.pitch = clamp(P.pitch + ly * 1.6 * sens * dt, -1.5, 1.5); }
@@ -21,7 +31,7 @@ export function update(dt) {
   let iz = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0) + joy.y;
   const il = Math.hypot(ix, iz); if (il > 1) { ix /= il; iz /= il; }
   const sprint = (keys.ShiftLeft || keys.ShiftRight || (isTouch && joy.y > .92)) && iz > .3;
-  const speed = sprint ? 10 : 6.5;
+  const speed = (sprint ? 10 : 6.5) * (S.ads ? .5 : 1);
   const fwx = -Math.sin(P.yaw), fwz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
   const tx = (fwx * iz + rx * ix) * speed, tz = (fwz * iz + rz * ix) * speed;
   const acc = Math.min(1, dt * (P.onGround ? 12 : 2.5));
@@ -41,6 +51,12 @@ export function update(dt) {
   camera.position.set(P.x + rand(-1, 1) * S.shake * .04, P.y + 1.6 + rand(-1, 1) * S.shake * .04, P.z);
   camera.rotation.set(P.pitch, P.yaw, 0);
 
+  // Zielen (ADS-Zoom)
+  const targetFov = S.ads ? ADS_FOV : BASE_FOV;
+  currentFov += (targetFov - currentFov) * Math.min(1, dt * 12);
+  if (Math.abs(camera.fov - currentFov) > .01) { camera.fov = currentFov; camera.updateProjectionMatrix(); }
+  adsT += ((S.ads ? 1 : 0) - adsT) * Math.min(1, dt * 11);
+
   // Waffe
   S.fireCd -= dt; S.bloom = Math.max(0, S.bloom - dt * .09);
   if (S.reloading > 0) { S.reloading -= dt; if (S.reloading <= 0) { S.reloading = 0; S.ammo = 30; } }
@@ -59,8 +75,11 @@ export function update(dt) {
   S.swayX = (S.swayX || 0) + (clamp(-mdx * .0004, -.04, .04) - (S.swayX || 0)) * Math.min(1, dt * 10);
   S.swayY = (S.swayY || 0) + (clamp(mdy * .0004, -.04, .04) - (S.swayY || 0)) * Math.min(1, dt * 10);
   const rl = S.reloading > 0 ? Math.sin((1 - S.reloading / 1.6) * Math.PI) : 0;
-  gunRoot.position.set(gBase.x + Math.cos(S.bobT) * .012 * hs + S.swayX, gBase.y + Math.abs(Math.sin(S.bobT)) * .012 * hs - rl * .12 + S.swayY, gBase.z + S.kick * .06);
-  gunRoot.rotation.set(S.kick * .1 - rl * .7, sprint ? .25 : 0, rl * .4);
+  const steady = 1 - adsT * .75;
+  const kickSteady = 1 - adsT * .82;
+  const bx = gBase.x + (ADS_POS.x - gBase.x) * adsT, by = gBase.y + (ADS_POS.y - gBase.y) * adsT, bz = gBase.z + (ADS_POS.z - gBase.z) * adsT;
+  gunRoot.position.set(bx + Math.cos(S.bobT) * .012 * hs * steady + S.swayX * steady, by + Math.abs(Math.sin(S.bobT)) * .012 * hs * steady - rl * .12 + S.swayY * steady, bz + S.kick * .06 * kickSteady);
+  gunRoot.rotation.set(S.kick * .1 * kickSteady - rl * .7, (sprint ? .25 : 0) * (1 - adsT), rl * .4);
 
   // Regeneration bis 60
   if (S.time - S.lastHurt > 5 && S.hp < 60) S.hp = Math.min(60, S.hp + 7 * dt);

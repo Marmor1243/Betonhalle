@@ -1,6 +1,5 @@
 import { $, clamp } from '../core/utils.js';
-import { S, P } from './state.js';
-import { aliveCount } from './state.js';
+import { S, P, aliveCount } from './state.js';
 
 const hudCache = {};
 function setT(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
@@ -20,7 +19,10 @@ export function dmgIndicator(fx, fz) {
   const d = document.createElement('div'); d.className = 'dmg'; d.style.transform = `rotate(${ang}rad)`;
   $('dmgring').appendChild(d); setTimeout(() => d.remove(), 1150);
 }
-export function spreadNow(moving) { return .003 + (moving ? .016 : 0) + (P.onGround ? 0 : .05) + S.bloom; }
+export function spreadNow(moving) {
+  const base = .003 + (moving ? .016 : 0) + (P.onGround ? 0 : .05) + S.bloom;
+  return S.ads ? base * .35 : base;
+}
 export function updateHUD() {
   setT('waveN', String(S.wave || 1));
   const left = S.toSpawn + aliveCount();
@@ -36,8 +38,10 @@ export function updateHUD() {
   $('reloadBar').style.width = S.reloading > 0 ? ((1 - S.reloading / 1.6) * 100) + '%' : '0%';
   const moving = Math.hypot(P.vx, P.vz) > 1;
   const gap = 5 + (spreadNow(moving) * 520);
-  const xh = $('xhair').children;
-  xh[0].style.top = (-gap - 9) + 'px'; xh[1].style.top = gap + 'px'; xh[2].style.left = (-gap - 9) + 'px'; xh[3].style.left = gap + 'px';
+  const xh = $('xhair');
+  xh.classList.toggle('ads', S.ads);
+  const c = xh.children;
+  c[0].style.top = (-gap - 9) + 'px'; c[1].style.top = gap + 'px'; c[2].style.left = (-gap - 9) + 'px'; c[3].style.left = gap + 'px';
   const since = S.time - S.lastHurt;
   const lowPulse = hp <= 30 ? .25 + Math.sin(S.time * 5) * .1 : 0;
   $('vignette').style.opacity = String(Math.max(clamp(1 - since * 1.8, 0, 1) * .8, lowPulse));
