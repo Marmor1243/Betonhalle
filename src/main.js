@@ -5,10 +5,12 @@ import { updateParticles, updateTracers } from './render/particles.js';
 import { S } from './game/state.js';
 import { update } from './game/update.js';
 import { attract, setupDecor } from './game/menu.js';
+import { renderChangelog } from './game/changelog.js';
 import './game/flow.js';
 import './game/input.js';
 
 setupDecor();
+renderChangelog();
 
 function resize() {
   const w = innerWidth, h = innerHeight;

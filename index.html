@@ -38,13 +38,16 @@
 
   <div class="overlay" id="ovStart">
     <div class="card">
-      <span class="eyebrow">Arena-Shooter · Wellen gegen Bots</span>
-      <h1>Beton&shy;halle</h1>
-      <p>Eine Halle aus Sichtbeton, 80 × 80 Meter, Kisten und Pfeiler als Deckung. Jede Welle schickt mehr Bots, und sie zielen besser, je länger du durchhältst. Kopfschüsse zählen fast dreifach.</p>
+      <div class="titleblock">
+        <span class="eyebrow">Arena-Shooter · Wellen gegen Bots</span>
+        <h1>Beton&shy;halle</h1>
+        <div class="rule"></div>
+      </div>
       <div class="keys" id="keysDesk">
         <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Bewegen</div>
         <div><kbd>Maus</kbd> Zielen</div>
         <div><kbd>Klick</kbd> Schießen</div>
+        <div><kbd>Rechtsklick</kbd> Zielen (Zoom)</div>
         <div><kbd>R</kbd> Nachladen</div>
         <div><kbd>Leer</kbd> Springen</div>
         <div><kbd>Shift</kbd> Sprinten</div>
@@ -61,6 +64,10 @@
         <label class="sens" for="sens">Maus-Empfindlichkeit <input id="sens" type="range" min="0.5" max="3" step="0.1" value="1.2"></label>
       </div>
       <div class="best" id="bestLine">Noch kein Bestwert.</div>
+    </div>
+    <div class="changelog">
+      <div class="changelog-head">Updates</div>
+      <div class="changelog-body" id="changelogBody"></div>
     </div>
   </div>
 
