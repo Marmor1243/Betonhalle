@@ -55,17 +55,21 @@ export function update(dt) {
   // Slide bei der Landung, statt exakt im selben Frame passieren zu müssen.
   if (crouchPressed) P.crouchArmed = true;
   if (!crouchHeld) P.crouchArmed = false;
-  if (P.crouchArmed && sprint && P.onGround && !P.sliding && Math.hypot(P.vx, P.vz) > 4) {
+  P.slideCd = Math.max(0, (P.slideCd || 0) - dt);
+  if (P.crouchArmed && sprint && P.onGround && !P.sliding && P.slideCd <= 0 && Math.hypot(P.vx, P.vz) > 4) {
     P.sliding = true; P.slideT = .5; P.crouchArmed = false;
+    // Feste Basisgeschwindigkeit statt der AKTUELLEN (evtl. noch vom letzten
+    // Slide erhöhten) Geschwindigkeit - sonst schaukelt sich Slide-Spammen zu
+    // immer schnelleren Slides hoch, statt normal abzubremsen.
+    P.slideSpeed = 16 * (P.jumpBoostT > 0 ? 1.35 : 1);
     const L = Math.hypot(P.vx, P.vz);
     P.slideDirX = P.vx / L; P.slideDirZ = P.vz / L;
-    P.slideSpeed = Math.max(L * 1.55, 16) * (P.jumpBoostT > 0 ? 1.35 : 1);
     P.jumpBoostT = 0;
   }
   if (P.sliding) {
     P.slideT -= dt;
     P.slideSpeed = Math.max(0, P.slideSpeed - dt * 16);
-    if (P.slideT <= 0 || P.slideSpeed < 2.5 || !crouchHeld || !P.onGround) P.sliding = false;
+    if (P.slideT <= 0 || P.slideSpeed < 2.5 || !crouchHeld || !P.onGround) { P.sliding = false; P.slideCd = 1; }
   }
   P.crouch = (P.crouch || 0) + (((crouchHeld || P.sliding) ? 1 : 0) - (P.crouch || 0)) * Math.min(1, dt * 10);
 
