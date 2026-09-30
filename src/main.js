@@ -7,6 +7,7 @@ import { update } from './game/update.js';
 import { attract, setupDecor } from './game/menu.js';
 import { renderChangelog } from './game/changelog.js';
 import { buildWaveArena } from './world/arena.js';
+import { playMenuMusic } from './core/music.js';
 import './game/flow.js';
 import './game/input.js';
 import './game/settingsUI.js';
@@ -14,6 +15,7 @@ import './game/settingsUI.js';
 buildWaveArena();
 setupDecor();
 renderChangelog();
+playMenuMusic();
 
 function resize() {
   const w = innerWidth, h = innerHeight;

@@ -1,5 +1,6 @@
 import { $, isTouch, store } from '../core/utils.js';
 import { initAudio } from '../core/audio.js';
+import { playMenuMusic, pauseMenuMusic } from '../core/music.js';
 import { scene } from '../render/scene.js';
 import { buildWaveArena } from '../world/arena.js';
 import { S, resetGame, getBest, showBest } from './state.js';
@@ -13,7 +14,7 @@ import { closeBigMap } from './minimap.js';
 function show(id, on) { $(id).hidden = !on; }
 
 function startPlay(type) {
-  initAudio(); resetGame(); closeBigMap();
+  initAudio(); resetGame(); closeBigMap(); pauseMenuMusic();
   S.gameType = type;
   if (type === 'story') startMission1();
   S.mode = 'play';
@@ -54,7 +55,7 @@ export function goMenu() {
   S.mode = 'menu';
   buildWaveArena();
   show('hud', false); show('touch', false); show('ovPause', false); show('ovOver', false); show('ovStart', true);
-  setupDecor(); showBest();
+  setupDecor(); showBest(); playMenuMusic();
 }
 
 $('btnStart').addEventListener('click', beginGame);
