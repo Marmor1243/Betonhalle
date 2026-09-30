@@ -9,6 +9,7 @@ import { renderChangelog } from './game/changelog.js';
 import { buildWaveArena } from './world/arena.js';
 import './game/flow.js';
 import './game/input.js';
+import './game/settingsUI.js';
 
 buildWaveArena();
 setupDecor();

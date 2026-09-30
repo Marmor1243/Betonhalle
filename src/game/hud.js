@@ -1,4 +1,5 @@
 import { $, clamp } from '../core/utils.js';
+import { settings } from '../core/settings.js';
 import { S, P, aliveCount } from './state.js';
 import { missionStatusText } from './story.js';
 import { drawMinimap } from './minimap.js';
@@ -52,5 +53,9 @@ export function updateHUD() {
   const since = S.time - S.lastHurt;
   const lowPulse = hp <= 30 ? .25 + Math.sin(S.time * 5) * .1 : 0;
   $('vignette').style.opacity = String(Math.max(clamp(1 - since * 1.8, 0, 1) * .8, lowPulse));
-  drawMinimap();
+  const mm = $('minimap');
+  mm.hidden = !settings.minimap;
+  mm.style.width = mm.style.height = settings.minimapSize + 'px';
+  $('stats').style.setProperty('--mmOffset', (settings.minimap ? settings.minimapSize + 18 : 0) + 'px');
+  if (settings.minimap) drawMinimap();
 }

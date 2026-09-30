@@ -1,10 +1,11 @@
 import { V3, clamp, rand, isTouch } from '../core/utils.js';
-import { scene, camera, muzzleLight, BASE_FOV, ADS_FOV } from '../render/scene.js';
+import { settings } from '../core/settings.js';
+import { scene, camera, muzzleLight } from '../render/scene.js';
 import { gunRoot, gBase, gunFlash, SIGHT_OFFSET } from '../render/weapon.js';
 import { resolveCircle } from '../world/collision.js';
 import { emit } from '../render/particles.js';
 import { sfx } from '../core/audio.js';
-import { S, P, sens, startWave, spawnBot, aliveCount } from './state.js';
+import { S, P, startWave, spawnBot, aliveCount } from './state.js';
 import { keys, joy, mouseDown, touchFire, aimHeld, consumeMouseDelta } from './input.js';
 import { fire, startReload } from './combat.js';
 import { bots, updateBot } from './bots.js';
@@ -12,7 +13,9 @@ import { pickups } from './pickups.js';
 import { feed, banner, updateHUD } from './hud.js';
 import { storyTick } from './story.js';
 
-let currentFov = BASE_FOV;
+function adsFovFor(baseFov) { return Math.atan(Math.tan(baseFov * Math.PI / 360) / 2) * 360 / Math.PI; }
+
+let currentFov = settings.fov;
 let adsT = 0;
 // Zielposition der Waffe: das Visier (SIGHT_OFFSET) landet exakt in der Bildmitte,
 // in ADS_EYE_Z Metern vor der Kamera - nicht der Waffenkörper selbst.
@@ -26,7 +29,7 @@ export function update(dt) {
   S.ads = aimHeld && P.onGround;
   // Zielen per Pfeiltasten
   const lx = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0), ly = (keys.ArrowUp ? 1 : 0) - (keys.ArrowDown ? 1 : 0);
-  if (lx || ly) { P.yaw -= lx * 2.2 * sens * dt; P.pitch = clamp(P.pitch + ly * 1.6 * sens * dt, -1.5, 1.5); }
+  if (lx || ly) { P.yaw -= lx * 2.2 * settings.sens * dt; P.pitch = clamp(P.pitch + ly * 1.6 * settings.sens * dt, -1.5, 1.5); }
   // Bewegung
   let ix = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0) + joy.x;
   let iz = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0) + joy.y;
@@ -49,11 +52,12 @@ export function update(dt) {
   // Rückstoß-Erholung
   const rec = Math.min(S.recoilRec, dt * .3); P.pitch -= rec; S.recoilRec -= rec;
   S.shake = Math.max(0, S.shake - dt * 3);
-  camera.position.set(P.x + rand(-1, 1) * S.shake * .04, P.y + 1.6 + rand(-1, 1) * S.shake * .04, P.z);
+  const shakeAmt = S.shake * .04 * settings.shake;
+  camera.position.set(P.x + rand(-1, 1) * shakeAmt, P.y + 1.6 + rand(-1, 1) * shakeAmt, P.z);
   camera.rotation.set(P.pitch, P.yaw, 0);
 
   // Zielen (ADS-Zoom)
-  const targetFov = S.ads ? ADS_FOV : BASE_FOV;
+  const targetFov = S.ads ? adsFovFor(settings.fov) : settings.fov;
   currentFov += (targetFov - currentFov) * Math.min(1, dt * 12);
   if (Math.abs(camera.fov - currentFov) > .01) { camera.fov = currentFov; camera.updateProjectionMatrix(); }
   adsT += ((S.ads ? 1 : 0) - adsT) * Math.min(1, dt * 11);

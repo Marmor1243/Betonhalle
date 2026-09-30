@@ -25,7 +25,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidd
 #bigmap{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,9,8,.78)}
 #bigmap canvas{width:min(78vmin,640px);height:min(78vmin,640px);aspect-ratio:1/1;border:1px solid var(--line);background:rgba(0,0,0,.35)}
 #bigmapHint{position:absolute;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-#stats{position:absolute;right:20px;top:calc(16px + env(safe-area-inset-top,0px) + 178px);display:flex;gap:22px;text-align:right}
+#stats{position:absolute;right:20px;top:calc(16px + env(safe-area-inset-top,0px) + var(--mmOffset, 178px));display:flex;gap:22px;text-align:right}
 #stats div{display:grid;gap:4px}
 #stats b{font-size:30px}
 #feed{position:absolute;right:20px;top:calc(84px + env(safe-area-inset-top,0px));display:grid;gap:4px;justify-items:end;font-size:12px}
@@ -91,6 +91,11 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--ink);border:1px solid var
 .results div{background:var(--panel);padding:12px 14px;display:grid;gap:6px}
 .results b{font-family:var(--display);font-weight:900;font-size:36px;font-variant-numeric:tabular-nums;line-height:.9}
 .newbest{color:var(--sodium);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.settingsGrid{display:grid;gap:16px;max-width:420px}
+.settingsGrid .sens{justify-content:space-between}
+.settingsGrid .sens input{width:180px}
+.chk{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--ink)}
+.chk input{accent-color:var(--sodium);width:18px;height:18px}
 .hint{font-size:12px;color:var(--dim)}
 
 .changelog{position:absolute;left:20px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:min(300px,84vw);display:grid;gap:6px}
@@ -113,5 +118,5 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--ink);border:1px solid var
 #tFire{right:28px;bottom:calc(120px + env(safe-area-inset-bottom,0px));width:88px;height:88px;font-size:20px;border-color:var(--sodium)!important;color:var(--sodium)!important}
 #tJump{right:128px;bottom:calc(110px + env(safe-area-inset-bottom,0px));width:58px;height:58px;font-size:14px}
 #tReload{right:46px;bottom:calc(222px + env(safe-area-inset-bottom,0px));width:52px;height:52px;font-size:18px}
-@media (max-width:600px){#stats b,#top b{font-size:28px}#health b,#ammo b{font-size:40px}#minimap{width:110px;height:110px}#stats{top:calc(16px + env(safe-area-inset-top,0px) + 126px)}#minimapHint{display:none}}
+@media (max-width:600px){#stats b,#top b{font-size:28px}#health b,#ammo b{font-size:40px}#minimapHint{display:none}}
 @media (prefers-reduced-motion:reduce){#feed div,#hitm.on,.dmg{animation-duration:.01s}}

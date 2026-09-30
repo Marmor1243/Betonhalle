@@ -44,5 +44,14 @@ export const CHANGELOG = [
       'Gegner außerhalb der Minimap-Reichweite werden als roter Punkt am Kartenrand in ihrer echten Richtung angezeigt.',
       'Taste Tab öffnet eine nordausgerichtete Vogelperspektive der gesamten Karte inkl. Kontrollpunkt im Story-Modus.'
     ]
+  },
+  {
+    date: '30.09.2026',
+    title: 'Einstellungen',
+    items: [
+      'Neues Einstellungen-Menü, erreichbar vom Hauptmenü UND per Escape aus einer laufenden Runde.',
+      'Maus-Empfindlichkeit, Lautstärke, Sichtfeld (FOV) und Bildschirm-Shake einstellbar - alles live wirksam.',
+      'Zielen wahlweise als Halten oder Umschalten, Minimap ein-/ausblendbar und in der Größe einstellbar.'
+    ]
   }
 ];

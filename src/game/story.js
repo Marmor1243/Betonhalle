@@ -41,41 +41,65 @@ function buildMission1() {
   addBox(3, 43, 1, 18, wallH, 'concrete');
   addBox(-1, 40, 1.4, 1.4, 1.2, 'crate');
   addBox(1, 48, 1.4, 1.4, 1.2, 'crate');
-  addBox(5.5, 52.25, 5, 1, wallH, 'concrete');
-  addBox(-5.5, 52.25, 5, 1, wallH, 'concrete');
+  addBox(7, 52.25, 7, 1, wallH, 'concrete');
+  addBox(-7, 52.25, 7, 1, wallH, 'concrete');
 
-  // --- Stufe 2: Kontrollpunkt-Raum (x [-8,8], z [52,73]) ---
-  addFloor(16, 21, 0, 62.5);
-  addBox(-8, 62, 1, 20, wallH, 'concrete');
-  addBox(8, 62, 1, 20, wallH, 'concrete');
-  addBox(0, 72.5, 17, 1, wallH, 'concrete');
+  // --- Stufe 2: Kontrollpunkt-Raum (x [-11,11], z [52,74]) ---
+  // Kleine Arena statt zwei großer Blocker: viele verstreute Kisten/Pfeiler
+  // rund um den Punkt, symmetrisch verteilt wie in der Wellen-Arena, nur im
+  // Miniaturformat. Verteidiger spawnen an den Außenrändern dahinter.
+  const cx = 0, cz = 63;
+  const quadAt = (x, z, w, d, h, k) => { addBox(cx + x, cz + z, w, d, h, k); addBox(cx - x, cz + z, w, d, h, k); addBox(cx + x, cz - z, w, d, h, k); addBox(cx - x, cz - z, w, d, h, k); };
+  const rot4At = (x, z, w, d, h, k) => { addBox(cx + x, cz + z, w, d, h, k); addBox(cx - z, cz + x, d, w, h, k); addBox(cx - x, cz - z, w, d, h, k); addBox(cx + z, cz - x, d, w, h, k); };
+
+  addFloor(22, 23, cx, cz);
+  addBox(cx - 11, cz, 1, 22, wallH, 'concrete');
+  addBox(cx + 11, cz, 1, 22, wallH, 'concrete');
+  addBox(cx, cz + 11.5, 23, 1, wallH, 'concrete');
+
+  quadAt(4, 4, 1.8, 1.8, 1.5, 'crate');
+  quadAt(8, 8, 1.4, 1.4, 1.3, 'crate');
+  rot4At(3, 9, 2, 2, 2.2, 'concrete');
+
+  const capturePos = { x: cx, z: cz };
   const ring = new THREE.Mesh(new THREE.RingGeometry(2.7, 3, 48), new THREE.MeshBasicMaterial({ color: 0xff9a3c, transparent: true, opacity: .55 }));
-  ring.rotation.x = -Math.PI / 2; ring.position.set(0, .02, 62); addDecor(ring);
+  ring.rotation.x = -Math.PI / 2; ring.position.set(capturePos.x, .02, capturePos.z); addDecor(ring);
 
-  return { gate1 };
+  // Wegpunkt-Markierung: kleine Kegelspitze auf einem dünnen Stiel, dreht sich
+  // langsam über dem Punkt - deutlich niedriger als vorher.
+  const markerMat = new THREE.MeshBasicMaterial({ color: 0xff9a3c });
+  const marker = new THREE.Group();
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(.32, .7, 10), markerMat);
+  tip.rotation.x = Math.PI; tip.position.y = -.15; marker.add(tip);
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, .5, 8), markerMat);
+  stem.position.y = .45; marker.add(stem);
+  marker.position.set(capturePos.x, 2.1, capturePos.z); marker.visible = false;
+  addDecor(marker);
+
+  return { gate1, arrow: marker };
 }
 
 let mission = null;
 
 export function startMission1() {
   clearLevel();
-  const { gate1 } = buildMission1();
-  setNavBounds(-11, 11, -32, 74);
+  const { gate1, arrow } = buildMission1();
+  setNavBounds(-12, 12, -32, 77);
   rebuildNavGrid();
   Object.assign(P, { x: 0, y: 1.2, z: -27, vx: 0, vy: 0, vz: 0, yaw: Math.PI, pitch: 0, onGround: true });
   S.diff = diffFor(6);
   mission = {
-    idx: 0, active: null,
+    idx: 0, active: null, arrow,
     stages: [
       {
         type: 'kill', triggerZ: 8, spawns: [[-4, 22], [4, 22], [-3, 30], [3, 30]], gate: gate1,
         startMsg: ['Kontakt!', 'Gegner gesichtet'], clearMsg: ['Weg frei', 'Die Blockade ist durchbrochen']
       },
       {
-        type: 'capture', triggerZ: 52, point: { x: 0, z: 62 }, radius: 3, holdTime: 10,
-        spawns: [[-5, 58], [5, 58], [0, 68]],
-        reinforceInterval: 3, reinforceMax: 6,
-        reinforcePoints: [[-6, 64], [6, 64], [-6, 58], [6, 58], [0, 70], [-6, 68]],
+        type: 'capture', triggerZ: 52, point: { x: 0, z: 63 }, radius: 3, holdTime: 10,
+        spawns: [[-9, 56], [9, 56]],
+        reinforceInterval: 3.5, reinforceMax: 6,
+        reinforcePoints: [[-9, 70], [9, 70], [-3, 71], [3, 55], [-9, 63], [9, 63]],
         startMsg: ['Kontrollpunkt', 'Punkt halten, während Verstärkung eintrifft']
       }
     ]
@@ -123,6 +147,12 @@ export function missionStatusText() {
 export function storyTick(dt) {
   if (!mission) return;
   const stage = mission.stages[mission.idx];
+
+  if (mission.arrow) {
+    const showArrow = !!(stage && stage.type === 'capture');
+    mission.arrow.visible = showArrow;
+    if (showArrow) { mission.arrow.position.y = 2.1 + Math.sin(S.time * 2) * .15; mission.arrow.rotation.y += dt * 1.6; }
+  }
   if (!stage) return;
 
   if (!mission.active) {

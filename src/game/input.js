@@ -1,6 +1,7 @@
 import { $, isTouch } from '../core/utils.js';
+import { settings, onSettingsChange } from '../core/settings.js';
 import { canvas } from '../render/renderer.js';
-import { S, P, sens } from './state.js';
+import { S, P } from './state.js';
 import { startReload } from './combat.js';
 import { pause, resumePlay } from './flow.js';
 import { toggleBigMap } from './minimap.js';
@@ -15,6 +16,7 @@ export let noLock = isTouch;
 let mdx = 0, mdy = 0;
 
 export function stopInput() { mouseDown = false; touchFire = false; aimHeld = false; }
+onSettingsChange((key) => { if (key === 'adsToggle') aimHeld = false; });
 export function consumeMouseDelta() { const dx = mdx, dy = mdy; mdx = mdy = 0; return { dx, dy }; }
 
 addEventListener('keydown', e => {
@@ -31,16 +33,16 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; mouseDow
 document.addEventListener('mousemove', e => {
   if (S.mode !== 'play' || isTouch || !(locked || noLock)) return;
   if (Math.abs(e.movementX) > 300 || Math.abs(e.movementY) > 300) return;
-  const s = .0022 * sens * .85 * (S.ads ? .45 : 1);
+  const s = .0022 * settings.sens * .85 * (S.ads ? .45 : 1);
   P.yaw -= e.movementX * s; P.pitch = Math.max(-1.5, Math.min(1.5, P.pitch - e.movementY * s));
   mdx += e.movementX; mdy += e.movementY;
 });
 canvas.addEventListener('mousedown', e => {
   if (isTouch) return;
   if (e.button === 0) { if (S.mode === 'play') { if (!locked && !noLock) requestLock(); mouseDown = true; } }
-  else if (e.button === 2) { if (S.mode === 'play') aimHeld = true; }
+  else if (e.button === 2) { if (S.mode === 'play') aimHeld = settings.adsToggle ? !aimHeld : true; }
 });
-addEventListener('mouseup', e => { if (e.button === 0) mouseDown = false; if (e.button === 2) aimHeld = false; });
+addEventListener('mouseup', e => { if (e.button === 0) mouseDown = false; if (e.button === 2 && !settings.adsToggle) aimHeld = false; });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 
 export function requestLock() {

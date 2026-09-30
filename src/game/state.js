@@ -11,10 +11,6 @@ import { sfx } from '../core/audio.js';
 export const S = { mode: 'menu', diff: { acc: .3, dmg: 8, fireInt: .9, speed: 3.5, react: .7, hp: 100 } };
 export const P = { x: 0, y: 1.2, z: 0, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: 0, onGround: true };
 
-export let sens = parseFloat(store('bh_sens')) || 1.2;
-$('sens').value = sens;
-$('sens').addEventListener('input', e => { sens = parseFloat(e.target.value); store('bh_sens', String(sens)); });
-
 export function getBest() { try { return JSON.parse(store('bh_best')) || null; } catch (e) { return null; } }
 export function showBest() {
   const b = getBest();

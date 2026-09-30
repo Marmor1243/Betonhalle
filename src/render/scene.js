@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import { skyTex } from './textures.js';
+import { settings } from '../core/settings.js';
 
 export const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x5b4034, 40, 130);
-export const BASE_FOV = 75;
-export const ADS_FOV = Math.atan(Math.tan(BASE_FOV * Math.PI / 360) / 2) * 360 / Math.PI;
-export const camera = new THREE.PerspectiveCamera(BASE_FOV, 1, 0.05, 400);
+export const camera = new THREE.PerspectiveCamera(settings.fov, 1, 0.05, 400);
 camera.rotation.order = 'YXZ';
 scene.add(camera);
 
