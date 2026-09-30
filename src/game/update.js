@@ -17,6 +17,7 @@ function adsFovFor(baseFov) { return Math.atan(Math.tan(baseFov * Math.PI / 360)
 
 let currentFov = settings.fov;
 let adsT = 0;
+let slideTilt = 0;
 // Zielposition der Waffe: das Visier (SIGHT_OFFSET) landet exakt in der Bildmitte,
 // in ADS_EYE_Z Metern vor der Kamera - nicht der Waffenkörper selbst.
 const ADS_EYE_Z = -.28;
@@ -35,14 +36,49 @@ export function update(dt) {
   let iz = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0) + joy.y;
   const il = Math.hypot(ix, iz); if (il > 1) { ix /= il; iz /= il; }
   const sprint = (keys.ShiftLeft || keys.ShiftRight || (isTouch && joy.y > .92)) && iz > .3;
-  const speed = (sprint ? 10 : 6.5) * (S.ads ? .5 : 1);
   const fwx = -Math.sin(P.yaw), fwz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
-  const tx = (fwx * iz + rx * ix) * speed, tz = (fwz * iz + rz * ix) * speed;
-  const acc = Math.min(1, dt * (P.onGround ? 12 : 2.5));
+
+  // Ducken / Sprint-Slide: aus dem Sprint heraus Ducken gedrückt -> kurzer,
+  // abbremsender Boost in Laufrichtung, danach bleibt man geduckt, solange die
+  // Taste gehalten wird. Direkt nach einem Sprung eingeleitet (Bunny-Hop-
+  // Fenster) gibt's nochmal deutlich mehr Speed - so wie in Krunker.
+  P.jumpBoostT = Math.max(0, (P.jumpBoostT || 0) - dt);
+  const crouchHeld = !!keys.KeyC;
+  if (crouchHeld && sprint && P.onGround && !P.sliding && Math.hypot(P.vx, P.vz) > 4) {
+    P.sliding = true; P.slideT = .9;
+    const L = Math.hypot(P.vx, P.vz);
+    P.slideDirX = P.vx / L; P.slideDirZ = P.vz / L;
+    P.slideSpeed = Math.max(L * 1.55, 16) * (P.jumpBoostT > 0 ? 1.35 : 1);
+    P.jumpBoostT = 0;
+  }
+  if (P.sliding) {
+    P.slideT -= dt;
+    P.slideSpeed = Math.max(0, P.slideSpeed - dt * 9);
+    if (P.slideT <= 0 || P.slideSpeed < 2.5 || !crouchHeld || !P.onGround) P.sliding = false;
+  }
+  P.crouch = (P.crouch || 0) + (((crouchHeld || P.sliding) ? 1 : 0) - (P.crouch || 0)) * Math.min(1, dt * 10);
+
+  let tx, tz, acc;
+  if (P.sliding) {
+    tx = P.slideDirX * P.slideSpeed; tz = P.slideDirZ * P.slideSpeed;
+    acc = Math.min(1, dt * 6);
+  } else {
+    const speed = (sprint ? 10 : 6.5) * (S.ads ? .5 : 1) * (crouchHeld && P.onGround ? .5 : 1);
+    tx = (fwx * iz + rx * ix) * speed; tz = (fwz * iz + rz * ix) * speed;
+    acc = Math.min(1, dt * (P.onGround ? 12 : 2.5));
+  }
   P.vx += (tx - P.vx) * acc; P.vz += (tz - P.vz) * acc;
-  if (keys.Space && P.onGround) { P.vy = 7.6; P.onGround = false; }
+  if (keys.Space && P.onGround) { P.vy = 7.6; P.onGround = false; P.sliding = false; P.jumpBoostT = .45; }
   const prevY = P.y;
-  P.vy = Math.max(P.vy - 22 * dt, -30);
+  // Fast-Fall: nur auf dem Weg nach unten (nie beim Hochsteigen, sonst killt
+  // man die Sprunghöhe) UND nur wenn C zwischendurch losgelassen wurde - man
+  // kann es nicht einfach durchgehend gedrückt halten. Timing: vorm Sprung C
+  // loslassen, springen, im Fallen C wieder drücken -> schneller unten für
+  // den nächsten Slide.
+  if (P.onGround) P.crouchReleasedInAir = false;
+  else if (!crouchHeld) P.crouchReleasedInAir = true;
+  const fastFall = crouchHeld && !P.onGround && P.vy <= 0 && P.crouchReleasedInAir;
+  P.vy = Math.max(P.vy - (fastFall ? 46 : 22) * dt, fastFall ? -48 : -30);
   P.x += P.vx * dt; P.z += P.vz * dt; P.y += P.vy * dt;
   const ground = resolveCircle(P, .4, prevY, .45);
   if (P.y <= ground) { P.y = ground; P.vy = 0; P.onGround = true; }
@@ -53,7 +89,8 @@ export function update(dt) {
   const rec = Math.min(S.recoilRec, dt * .3); P.pitch -= rec; S.recoilRec -= rec;
   S.shake = Math.max(0, S.shake - dt * 3);
   const shakeAmt = S.shake * .04 * settings.shake;
-  camera.position.set(P.x + rand(-1, 1) * shakeAmt, P.y + 1.6 + rand(-1, 1) * shakeAmt, P.z);
+  const eyeH = 1.6 - P.crouch * .6;
+  camera.position.set(P.x + rand(-1, 1) * shakeAmt, P.y + eyeH + rand(-1, 1) * shakeAmt, P.z);
   camera.rotation.set(P.pitch, P.yaw, 0);
 
   // Zielen (ADS-Zoom)
@@ -82,9 +119,10 @@ export function update(dt) {
   const rl = S.reloading > 0 ? Math.sin((1 - S.reloading / 1.6) * Math.PI) : 0;
   const steady = 1 - adsT * .75;
   const kickSteady = 1 - adsT * .82;
+  slideTilt += ((P.sliding && !S.ads ? 1 : 0) - slideTilt) * Math.min(1, dt * 9);
   const bx = gBase.x + (ADS_POS.x - gBase.x) * adsT, by = gBase.y + (ADS_POS.y - gBase.y) * adsT, bz = gBase.z + (ADS_POS.z - gBase.z) * adsT;
   gunRoot.position.set(bx + Math.cos(S.bobT) * .012 * hs * steady + S.swayX * steady, by + Math.abs(Math.sin(S.bobT)) * .012 * hs * steady - rl * .12 + S.swayY * steady, bz + S.kick * .06 * kickSteady);
-  gunRoot.rotation.set(S.kick * .1 * kickSteady - rl * .7, (sprint ? .25 : 0) * (1 - adsT), rl * .4);
+  gunRoot.rotation.set(S.kick * .1 * kickSteady - rl * .7, (sprint ? .25 : 0) * (1 - adsT), rl * .4 + slideTilt * .35);
 
   // Regeneration bis 60
   if (S.time - S.lastHurt > 5 && S.hp < 60) S.hp = Math.min(60, S.hp + 7 * dt);

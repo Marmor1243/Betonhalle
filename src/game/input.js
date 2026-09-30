@@ -26,6 +26,10 @@ addEventListener('keydown', e => {
     if (e.code === 'Tab') { e.preventDefault(); toggleBigMap(); }
     if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
     if ((e.code === 'Escape' || e.code === 'KeyP') && noLock) pause();
+  } else if (S.mode === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) {
+    // Escape ist ein Toggle: aus der Pause heraus macht es genau das, was
+    // „Weiter" tun würde, statt nur die Pause erneut (wirkungslos) zu öffnen.
+    if (noLock) resumePlay(); else requestLock();
   }
 });
 addEventListener('keyup', e => { keys[e.code] = false; });

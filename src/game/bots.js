@@ -44,7 +44,7 @@ export function makeBot(x, z) {
 }
 
 function botLOS(b) {
-  const o = new V3(b.x, 1.7, b.z), t = new V3(P.x, P.y + 1.5, P.z);
+  const o = new V3(b.x, 1.7, b.z), t = new V3(P.x, P.y + 1.5 - P.crouch * .6, P.z);
   const d = t.clone().sub(o), L = d.length(); d.divideScalar(L);
   return !traceWorld(o, d, L).hit;
 }
@@ -129,9 +129,9 @@ function botShoot(b, dist) {
   const muzzle = b.g.localToWorld(new V3(.34, 1.2, .8));
   b.flashMesh.visible = true; b.flashT = .05;
   const pm = Math.hypot(P.vx, P.vz);
-  const chance = S.diff.acc * clamp(1.15 - dist / 45, .25, 1) * (pm > 7 ? .6 : pm > 1.5 ? .8 : 1) * (P.onGround ? 1 : .7);
+  const chance = S.diff.acc * clamp(1.15 - dist / 45, .25, 1) * (pm > 7 ? .6 : pm > 1.5 ? .8 : 1) * (P.onGround ? 1 : .7) * (1 - P.crouch * .4);
   const hit = Math.random() < chance;
-  const target = new V3(P.x, P.y + 1.2 + rand(-.3, .3), P.z);
+  const target = new V3(P.x, P.y + 1.2 - P.crouch * .6 + rand(-.3, .3), P.z);
   if (!hit) target.add(new V3(rand(-1, 1), rand(-.4, .8), rand(-1, 1)).normalize().multiplyScalar(rand(.7, 1.8)));
   const dir = target.clone().sub(muzzle), L = dir.length(); dir.divideScalar(L);
   let end;

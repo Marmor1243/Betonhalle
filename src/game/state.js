@@ -9,7 +9,7 @@ import { banner } from './hud.js';
 import { sfx } from '../core/audio.js';
 
 export const S = { mode: 'menu', diff: { acc: .3, dmg: 8, fireInt: .9, speed: 3.5, react: .7, hp: 100 } };
-export const P = { x: 0, y: 1.2, z: 0, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: 0, onGround: true };
+export const P = { x: 0, y: 1.2, z: 0, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: 0, onGround: true, crouch: 0, sliding: false, slideT: 0, slideDirX: 0, slideDirZ: 0, slideSpeed: 0, crouchReleasedInAir: false, jumpBoostT: 0 };
 
 export function getBest() { try { return JSON.parse(store('bh_best')) || null; } catch (e) { return null; } }
 export function showBest() {
@@ -24,7 +24,7 @@ export function resetGame() {
   buildWaveArena();
   Object.assign(S, { gameType: 'waves', hp: 100, wave: 0, kills: 0, score: 0, shots: 0, hits: 0, heads: 0, lastHurt: -99, time: 0, ammo: 30, reloading: 0, fireCd: 0, bloom: 0, toSpawn: 0, spawnT: 0, intermission: 2.5, recoilRec: 0, kick: 0, shake: 0, maxAlive: 3, stepT: 0, ads: false });
   S.diff = diffFor(1);
-  Object.assign(P, { x: 0, y: 1.2, z: 0, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: 0, onGround: true });
+  Object.assign(P, { x: 0, y: 1.2, z: 0, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: 0, onGround: true, crouch: 0, sliding: false, slideT: 0, slideSpeed: 0 });
   $('feed').innerHTML = ''; $('dmgring').innerHTML = '';
   banner('Bereit machen', 'Welle 1 startet gleich');
 }

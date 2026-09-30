@@ -1,6 +1,6 @@
 import { $, isTouch, store } from '../core/utils.js';
 import { initAudio } from '../core/audio.js';
-import { playMenuMusic, pauseMenuMusic, playWaveMusic, pauseWaveMusic } from '../core/music.js';
+import { playMenuMusic, pauseMenuMusic, playWaveMusic, pauseWaveMusic, pauseGameAudio, resumeGameAudio } from '../core/music.js';
 import { scene } from '../render/scene.js';
 import { buildWaveArena } from '../world/arena.js';
 import { S, resetGame, getBest, showBest } from './state.js';
@@ -26,12 +26,12 @@ export function beginStory() { startPlay('story'); }
 
 export function pause() {
   if (S.mode !== 'play') return;
-  S.mode = 'paused'; stopInput();
+  S.mode = 'paused'; stopInput(); pauseGameAudio();
   $('pauseHint').textContent = noLock ? 'Tippe auf „Weiter“, um weiterzuspielen.' : 'Klick auf „Weiter“ fängt die Maus wieder ein.';
   show('ovPause', true); show('touch', false);
 }
 
-export function resumePlay() { S.mode = 'play'; show('ovPause', false); show('touch', isTouch); initAudio(); }
+export function resumePlay() { S.mode = 'play'; show('ovPause', false); show('touch', isTouch); initAudio(); resumeGameAudio(); }
 
 export function gameOver() {
   S.mode = 'over'; stopInput(); closeBigMap(); pauseWaveMusic();
@@ -64,4 +64,3 @@ $('btnAgain').addEventListener('click', () => startPlay(S.gameType || 'waves'));
 $('btnResume').addEventListener('click', () => { if (noLock) resumePlay(); else requestLock(); });
 $('btnMenu').addEventListener('click', goMenu);
 $('btnMenu2').addEventListener('click', goMenu);
-$('btnQuit').addEventListener('click', () => { S.mode = 'play'; gameOver(); });
