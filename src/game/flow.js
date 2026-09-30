@@ -1,6 +1,6 @@
 import { $, isTouch, store } from '../core/utils.js';
 import { initAudio } from '../core/audio.js';
-import { playMenuMusic, pauseMenuMusic } from '../core/music.js';
+import { playMenuMusic, pauseMenuMusic, playWaveMusic, pauseWaveMusic } from '../core/music.js';
 import { scene } from '../render/scene.js';
 import { buildWaveArena } from '../world/arena.js';
 import { S, resetGame, getBest, showBest } from './state.js';
@@ -16,7 +16,7 @@ function show(id, on) { $(id).hidden = !on; }
 function startPlay(type) {
   initAudio(); resetGame(); closeBigMap(); pauseMenuMusic();
   S.gameType = type;
-  if (type === 'story') startMission1();
+  if (type === 'story') { startMission1(); pauseWaveMusic(); } else { playWaveMusic(); }
   S.mode = 'play';
   show('ovStart', false); show('ovOver', false); show('ovPause', false); show('hud', true); show('touch', isTouch);
   requestLock();
@@ -34,7 +34,7 @@ export function pause() {
 export function resumePlay() { S.mode = 'play'; show('ovPause', false); show('touch', isTouch); initAudio(); }
 
 export function gameOver() {
-  S.mode = 'over'; stopInput(); closeBigMap();
+  S.mode = 'over'; stopInput(); closeBigMap(); pauseWaveMusic();
   if (document.pointerLockElement) document.exitPointerLock();
   $('rWave').textContent = S.wave; $('rKills').textContent = S.kills;
   $('rScore').textContent = S.score.toLocaleString('de-DE');
@@ -51,7 +51,7 @@ export function goMenu() {
   if (document.pointerLockElement) document.exitPointerLock();
   for (const b of bots) scene.remove(b.g); bots.length = 0;
   for (const p of pickups) scene.remove(p.g); pickups.length = 0;
-  stopInput(); closeBigMap();
+  stopInput(); closeBigMap(); pauseWaveMusic();
   S.mode = 'menu';
   buildWaveArena();
   show('hud', false); show('touch', false); show('ovPause', false); show('ovOver', false); show('ovStart', true);

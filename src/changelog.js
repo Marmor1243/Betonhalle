@@ -53,5 +53,13 @@ export const CHANGELOG = [
       'Maus-Empfindlichkeit, Lautstärke, Sichtfeld (FOV) und Bildschirm-Shake einstellbar - alles live wirksam.',
       'Zielen wahlweise als Halten oder Umschalten, Minimap ein-/ausblendbar und in der Größe einstellbar.'
     ]
+  },
+  {
+    date: '30.09.2026',
+    title: 'Musik',
+    items: [
+      'Hintergrundmusik fürs Hauptmenü und eigener Track für den Wellen-Modus.',
+      'Effekt- und Musik-Lautstärke getrennt einstellbar in den Optionen.'
+    ]
   }
 ];

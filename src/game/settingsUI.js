@@ -6,7 +6,8 @@ let returnTo = 'ovStart';
 
 function syncUI() {
   $('sens').value = settings.sens;
-  $('setVolume').value = settings.volume;
+  $('setSfxVolume').value = settings.sfxVolume;
+  $('setMusicVolume').value = settings.musicVolume;
   $('setFov').value = settings.fov;
   $('setShake').value = settings.shake;
   $('setAdsToggle').checked = settings.adsToggle;
@@ -26,7 +27,8 @@ function closeSettings() {
 }
 
 $('sens').addEventListener('input', e => setSetting('sens', parseFloat(e.target.value)));
-$('setVolume').addEventListener('input', e => setSetting('volume', parseFloat(e.target.value)));
+$('setSfxVolume').addEventListener('input', e => setSetting('sfxVolume', parseFloat(e.target.value)));
+$('setMusicVolume').addEventListener('input', e => setSetting('musicVolume', parseFloat(e.target.value)));
 $('setFov').addEventListener('input', e => setSetting('fov', parseFloat(e.target.value)));
 $('setShake').addEventListener('input', e => setSetting('shake', parseFloat(e.target.value)));
 $('setAdsToggle').addEventListener('change', e => setSetting('adsToggle', e.target.checked));

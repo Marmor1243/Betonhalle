@@ -1,18 +1,23 @@
 import { clamp } from './utils.js';
 import { settings, onSettingsChange } from './settings.js';
 
+// Die Sound-Effekte selbst sind absichtlich leise ausgesteuert (einzelne
+// Lautstärken um .1-.5); ohne diesen Boost wirkt selbst der volle Regler zu
+// leise. Der Regler bleibt 0-1, das Ergebnis ist einfach lauter/leiser skaliert.
+const SFX_GAIN_SCALE = 2.4;
+
 let AC = null, master = null, noiseBuf = null;
 
 export function initAudio() {
   if (AC) { if (AC.resume) AC.resume(); return; }
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
-    master = AC.createGain(); master.gain.value = settings.volume; master.connect(AC.destination);
+    master = AC.createGain(); master.gain.value = settings.sfxVolume * SFX_GAIN_SCALE; master.connect(AC.destination);
     noiseBuf = AC.createBuffer(1, AC.sampleRate * .5, AC.sampleRate);
     const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   } catch (e) { AC = null; }
 }
-onSettingsChange((key, value) => { if (key === 'volume' && master) master.gain.value = value; });
+onSettingsChange((key, value) => { if (key === 'sfxVolume' && master) master.gain.value = value * SFX_GAIN_SCALE; });
 
 function noise(dur, freq, type, vol, q = 1, delay = 0) {
   if (!AC) return; const t = AC.currentTime + delay;
