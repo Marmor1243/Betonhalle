@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { V3, rand } from '../core/utils.js';
 import { camera, muzzleLight } from '../render/scene.js';
-import { gunFlash } from '../render/weapon.js';
+import { activeFlash } from '../render/weapon.js';
 import { traceWorld } from '../world/collision.js';
 import { emit, addTracer } from '../render/particles.js';
 import { sfx } from '../core/audio.js';
@@ -10,13 +10,15 @@ import { bots } from './bots.js';
 import { feed, hitmarker, dmgIndicator, spreadNow } from './hud.js';
 import { spawnPickup } from './pickups.js';
 import { gameOver } from './flow.js';
+import { currentWeapon } from './weapons.js';
 
 const raycaster = new THREE.Raycaster();
 
 export function fire() {
-  S.fireCd = .095; S.ammo--; S.shots++;
+  const wcfg = currentWeapon();
+  S.fireCd = wcfg.fireCd; S.mag[S.weapon]--; S.shots++;
   const moving = Math.hypot(P.vx, P.vz) > 1;
-  const spread = spreadNow(moving);
+  const spread = spreadNow(moving) * wcfg.spread;
   S.bloom = Math.min(S.bloom + .005, .035);
   camera.updateMatrixWorld();
   const fwd = new V3(0, 0, -1).applyQuaternion(camera.quaternion);
@@ -35,7 +37,7 @@ export function fire() {
     const h = hits[0], b = h.object.userData.bot, part = h.object.userData.part;
     end = h.point;
     const head = part === 'head';
-    const dmg = head ? 70 : part === 'legs' ? 18 : 26;
+    const dmg = head ? wcfg.dmgHead : part === 'legs' ? wcfg.dmgLegs : wcfg.dmgBody;
     S.hits++;
     emit(h.point, dir.clone().negate(), head ? 16 : 9, head ? 0xffd060 : 0xff7040, 4, .35);
     damageBot(b, dmg, head);
@@ -44,6 +46,7 @@ export function fire() {
     if (w.hit) emit(end, w.n, 8, 0xffc080, 4, .35);
   }
   addTracer(muzzle, end, 0xffd08a);
+  const gunFlash = activeFlash();
   gunFlash.visible = true; gunFlash.rotation.z = Math.random() * 6; S.flashT = .04;
   muzzleLight.intensity = 3;
   S.kick = 1;
@@ -76,4 +79,8 @@ export function damagePlayer(d, fx, fz) {
   if (S.hp <= 0) gameOver();
 }
 
-export function startReload() { if (S.reloading > 0 || S.ammo === 30) return; S.reloading = 1.6; sfx.reload(); }
+export function startReload() {
+  const wcfg = currentWeapon();
+  if (S.reloading > 0 || S.mag[S.weapon] === wcfg.mag) return;
+  S.reloading = wcfg.reload; sfx.reload();
+}

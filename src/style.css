@@ -33,6 +33,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidd
 #feed div.hs{border-left-color:var(--blood)}
 @keyframes feedIn{from{opacity:0;transform:translateX(12px)}}
 #xhair{position:absolute;left:50%;top:50%;width:0;height:0}
+#ammoArc{position:absolute;left:calc(50% + 16px);top:calc(50% + 16px);width:0;height:0}
+.adot{position:absolute;width:3.5px;height:3.5px;margin:-1.75px 0 0 -1.75px;border-radius:50%;background:var(--dim);opacity:.4;box-shadow:0 1px 2px rgba(0,0,0,.5);transition:background .1s,opacity .1s}
+.adot.on{background:var(--ink);opacity:.95}
 #xhair i{position:absolute;background:var(--ink);box-shadow:0 0 0 1px rgba(0,0,0,.55)}
 #xhair .t,#xhair .b{width:2px;height:9px;left:-1px}
 #xhair .l,#xhair .r{height:2px;width:9px;top:-1px}
@@ -61,6 +64,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidd
 #ammo .bar{grid-column:1/-1;width:140px}
 #reloadBar{width:0;background:var(--sodium)!important;transition:none!important}
 #ammo.empty b{color:var(--blood)}
+#weaponSlots{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-bottom:2px}
+.wslot{width:46px;height:20px;color:var(--dim);opacity:.45;transition:color .15s,opacity .15s}
+.wslot.active{color:var(--ink);opacity:1}
+.wicon{width:100%;height:100%;fill:currentColor}
 #banner{position:absolute;left:50%;top:26%;transform:translateX(-50%);text-align:center;display:grid;gap:6px;opacity:0;transition:opacity .35s}
 #banner.on{opacity:1}
 #banner b{font-size:clamp(44px,8vw,86px);letter-spacing:.02em;text-transform:uppercase;color:var(--ink);text-shadow:0 2px 0 rgba(0,0,0,.4)}

@@ -1,13 +1,14 @@
 import { V3, clamp, rand, isTouch } from '../core/utils.js';
 import { settings } from '../core/settings.js';
 import { scene, camera, muzzleLight } from '../render/scene.js';
-import { gunRoot, gBase, gunFlash, SIGHT_OFFSET } from '../render/weapon.js';
+import { gunRoot, gBase, activeFlash, activeSightOffset, tickWeaponSwitch } from '../render/weapon.js';
 import { resolveCircle } from '../world/collision.js';
 import { emit } from '../render/particles.js';
 import { sfx } from '../core/audio.js';
 import { S, P, startWave, spawnBot, aliveCount } from './state.js';
 import { keys, joy, mouseDown, touchFire, aimHeld, consumeMouseDelta } from './input.js';
 import { fire, startReload } from './combat.js';
+import { currentWeapon } from './weapons.js';
 import { bots, updateBot } from './bots.js';
 import { pickups } from './pickups.js';
 import { feed, banner, updateHUD } from './hud.js';
@@ -18,10 +19,10 @@ function adsFovFor(baseFov) { return Math.atan(Math.tan(baseFov * Math.PI / 360)
 let currentFov = settings.fov;
 let adsT = 0;
 let slideTilt = 0;
-// Zielposition der Waffe: das Visier (SIGHT_OFFSET) landet exakt in der Bildmitte,
-// in ADS_EYE_Z Metern vor der Kamera - nicht der Waffenkörper selbst.
+// Zielposition der Waffe: das Visier der jeweils aktiven Waffe landet exakt
+// in der Bildmitte, in ADS_EYE_Z Metern vor der Kamera - nicht die Waffe
+// selbst. Wird pro Frame neu berechnet, da jede Waffe ein eigenes Visier hat.
 const ADS_EYE_Z = -.28;
-const ADS_POS = new V3(-SIGHT_OFFSET.x, -SIGHT_OFFSET.y, ADS_EYE_Z - SIGHT_OFFSET.z);
 
 export function update(dt) {
   S.time += dt;
@@ -38,14 +39,24 @@ export function update(dt) {
   const sprint = (keys.ShiftLeft || keys.ShiftRight || (isTouch && joy.y > .92)) && iz > .3;
   const fwx = -Math.sin(P.yaw), fwz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
 
-  // Ducken / Sprint-Slide: aus dem Sprint heraus Ducken gedrückt -> kurzer,
-  // abbremsender Boost in Laufrichtung, danach bleibt man geduckt, solange die
-  // Taste gehalten wird. Direkt nach einem Sprung eingeleitet (Bunny-Hop-
-  // Fenster) gibt's nochmal deutlich mehr Speed - so wie in Krunker.
+  // Ducken / Sprint-Slide: ein frischer Tastendruck (nicht Halten!) von Ducken
+  // aus dem Sprint heraus löst einen kurzen, abbremsenden Boost in Laufrichtung
+  // aus. Halten allein löst und verlängert NICHTS - ohne Loslassen+neu Drücken
+  // kein weiterer Slide, sonst könnte man sich durch Dauerhalten endlos selbst
+  // neu antriggern. Direkt nach einem Sprung getimt (Bunny-Hop-Fenster) gibt's
+  // nochmal deutlich mehr Speed - so wie in Krunker.
   P.jumpBoostT = Math.max(0, (P.jumpBoostT || 0) - dt);
   const crouchHeld = !!keys.KeyC;
-  if (crouchHeld && sprint && P.onGround && !P.sliding && Math.hypot(P.vx, P.vz) > 4) {
-    P.sliding = true; P.slideT = .9;
+  const crouchPressed = crouchHeld && !P.crouchPrev;
+  P.crouchPrev = crouchHeld;
+  // "Scharfgestellt" durch einen frischen Druck - bleibt so (auch über die
+  // Landung hinweg), bis entweder ein Slide daraus wird oder man loslässt.
+  // So zählt auch der Druck während des Falls (Fast-Fall-Geste) noch für den
+  // Slide bei der Landung, statt exakt im selben Frame passieren zu müssen.
+  if (crouchPressed) P.crouchArmed = true;
+  if (!crouchHeld) P.crouchArmed = false;
+  if (P.crouchArmed && sprint && P.onGround && !P.sliding && Math.hypot(P.vx, P.vz) > 4) {
+    P.sliding = true; P.slideT = .5; P.crouchArmed = false;
     const L = Math.hypot(P.vx, P.vz);
     P.slideDirX = P.vx / L; P.slideDirZ = P.vz / L;
     P.slideSpeed = Math.max(L * 1.55, 16) * (P.jumpBoostT > 0 ? 1.35 : 1);
@@ -53,7 +64,7 @@ export function update(dt) {
   }
   if (P.sliding) {
     P.slideT -= dt;
-    P.slideSpeed = Math.max(0, P.slideSpeed - dt * 9);
+    P.slideSpeed = Math.max(0, P.slideSpeed - dt * 16);
     if (P.slideT <= 0 || P.slideSpeed < 2.5 || !crouchHeld || !P.onGround) P.sliding = false;
   }
   P.crouch = (P.crouch || 0) + (((crouchHeld || P.sliding) ? 1 : 0) - (P.crouch || 0)) * Math.min(1, dt * 10);
@@ -100,27 +111,37 @@ export function update(dt) {
   adsT += ((S.ads ? 1 : 0) - adsT) * Math.min(1, dt * 11);
 
   // Waffe
+  const wcfg = currentWeapon();
   S.fireCd -= dt; S.bloom = Math.max(0, S.bloom - dt * .09);
-  if (S.reloading > 0) { S.reloading -= dt; if (S.reloading <= 0) { S.reloading = 0; S.ammo = 30; } }
-  const trigger = mouseDown || touchFire;
-  if (trigger && S.fireCd <= 0 && S.reloading <= 0) {
-    if (S.ammo > 0) fire(); else { startReload(); if (S.reloading <= 0) { sfx.empty(); S.fireCd = .25; } }
+  if (S.reloading > 0) { S.reloading -= dt; if (S.reloading <= 0) { S.reloading = 0; S.mag[S.weapon] = wcfg.mag; } }
+  // Vollautomatisch (Gewehr): Halten feuert durchgehend. Halbautomatisch
+  // (Pistole): nur ein frischer Klick löst einen Schuss aus, Halten bringt
+  // nichts - man muss für jeden Schuss neu klicken.
+  const triggerHeld = mouseDown || touchFire;
+  const triggerPressed = triggerHeld && !S.triggerPrev;
+  S.triggerPrev = triggerHeld;
+  const wantsFire = wcfg.auto ? triggerHeld : triggerPressed;
+  if (wantsFire && S.fireCd <= 0 && S.reloading <= 0) {
+    if (S.mag[S.weapon] > 0) fire(); else { startReload(); if (S.reloading <= 0) { sfx.empty(); S.fireCd = .25; } }
   }
-  if (S.flashT > 0) { S.flashT -= dt; if (S.flashT <= 0) gunFlash.visible = false; }
+  if (S.flashT > 0) { S.flashT -= dt; if (S.flashT <= 0) activeFlash().visible = false; }
   muzzleLight.intensity = Math.max(0, muzzleLight.intensity - dt * 60);
 
   // Viewmodel
+  tickWeaponSwitch(dt);
   S.kick = Math.max(0, S.kick - dt * 12);
   const hs = P.onGround ? Math.min(1, Math.hypot(P.vx, P.vz) / 6.5) : 0;
   S.bobT = (S.bobT || 0) + dt * (sprint ? 13 : 9) * hs;
   const { dx: mdx, dy: mdy } = consumeMouseDelta();
   S.swayX = (S.swayX || 0) + (clamp(-mdx * .0004, -.04, .04) - (S.swayX || 0)) * Math.min(1, dt * 10);
   S.swayY = (S.swayY || 0) + (clamp(mdy * .0004, -.04, .04) - (S.swayY || 0)) * Math.min(1, dt * 10);
-  const rl = S.reloading > 0 ? Math.sin((1 - S.reloading / 1.6) * Math.PI) : 0;
+  const rl = S.reloading > 0 ? Math.sin((1 - S.reloading / wcfg.reload) * Math.PI) : 0;
   const steady = 1 - adsT * .75;
   const kickSteady = 1 - adsT * .82;
   slideTilt += ((P.sliding && !S.ads ? 1 : 0) - slideTilt) * Math.min(1, dt * 9);
-  const bx = gBase.x + (ADS_POS.x - gBase.x) * adsT, by = gBase.y + (ADS_POS.y - gBase.y) * adsT, bz = gBase.z + (ADS_POS.z - gBase.z) * adsT;
+  const so = activeSightOffset();
+  const adsPos = { x: -so.x, y: -so.y, z: ADS_EYE_Z - so.z };
+  const bx = gBase.x + (adsPos.x - gBase.x) * adsT, by = gBase.y + (adsPos.y - gBase.y) * adsT, bz = gBase.z + (adsPos.z - gBase.z) * adsT;
   gunRoot.position.set(bx + Math.cos(S.bobT) * .012 * hs * steady + S.swayX * steady, by + Math.abs(Math.sin(S.bobT)) * .012 * hs * steady - rl * .12 + S.swayY * steady, bz + S.kick * .06 * kickSteady);
   gunRoot.rotation.set(S.kick * .1 * kickSteady - rl * .7, (sprint ? .25 : 0) * (1 - adsT), rl * .4 + slideTilt * .35);
 

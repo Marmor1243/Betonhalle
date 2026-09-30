@@ -70,5 +70,15 @@ export const CHANGELOG = [
       'Aus dem Sprint heraus Ducken drücken löst einen Slide aus - direkt nach einem Sprung getimt sogar mit Bunny-Hop-Bonus.',
       'Fast-Fall: im Fallen kurz Ducken loslassen und wieder drücken bringt dich schneller runter für den nächsten Slide.'
     ]
+  },
+  {
+    date: '30.09.2026',
+    title: 'Zweitwaffe: Pistole',
+    items: [
+      'Neue Pistole mit eigenem Kimme-Korn-Visier, kleinerem Magazin und halbautomatischem Feuer.',
+      'Wechseln mit 1/2 oder Mausrad, kurze Wechsel-Animation statt Aufploppen.',
+      'Waffen-Silhouetten unten rechts zeigen die aktive Waffe, Munitions-Bogen (Fortnite-Stil) neben dem Fadenkreuz.',
+      'Kleinere Slide-Bugfixes aus der letzten Runde mit eingeflossen.'
+    ]
   }
 ];

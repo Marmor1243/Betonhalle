@@ -5,6 +5,7 @@ import { S, P } from './state.js';
 import { startReload } from './combat.js';
 import { pause, resumePlay } from './flow.js';
 import { toggleBigMap } from './minimap.js';
+import { switchWeapon } from './weapons.js';
 
 export const keys = {};
 export let mouseDown = false, touchFire = false;
@@ -23,6 +24,8 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (S.mode === 'play') {
     if (e.code === 'KeyR') startReload();
+    if (e.code === 'Digit1') switchWeapon('rifle');
+    if (e.code === 'Digit2') switchWeapon('pistol');
     if (e.code === 'Tab') { e.preventDefault(); toggleBigMap(); }
     if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
     if ((e.code === 'Escape' || e.code === 'KeyP') && noLock) pause();
@@ -33,6 +36,11 @@ addEventListener('keydown', e => {
   }
 });
 addEventListener('keyup', e => { keys[e.code] = false; });
+canvas.addEventListener('wheel', e => {
+  if (S.mode !== 'play' || isTouch) return;
+  e.preventDefault();
+  if (e.deltaY < 0) switchWeapon('rifle'); else if (e.deltaY > 0) switchWeapon('pistol');
+}, { passive: false });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; mouseDown = false; aimHeld = false; if (S.mode === 'play' && noLock && !isTouch) pause(); });
 document.addEventListener('mousemove', e => {
   if (S.mode !== 'play' || isTouch || !(locked || noLock)) return;

@@ -86,7 +86,7 @@ export function startMission1() {
   const { gate1, arrow } = buildMission1();
   setNavBounds(-12, 12, -32, 77);
   rebuildNavGrid();
-  Object.assign(P, { x: 0, y: 1.2, z: -27, vx: 0, vy: 0, vz: 0, yaw: Math.PI, pitch: 0, onGround: true, crouch: 0, sliding: false, slideT: 0, slideSpeed: 0 });
+  Object.assign(P, { x: 0, y: 1.2, z: -27, vx: 0, vy: 0, vz: 0, yaw: Math.PI, pitch: 0, onGround: true, crouch: 0, sliding: false, slideT: 0, slideSpeed: 0, crouchPrev: false, crouchArmed: false, crouchReleasedInAir: false, jumpBoostT: 0 });
   S.diff = diffFor(6);
   mission = {
     idx: 0, active: null, arrow,
