@@ -76,8 +76,6 @@ export const CHANGELOG = [
     title: 'Zweitwaffe: Pistole',
     items: [
       'Neue Pistole mit eigenem Kimme-Korn-Visier, kleinerem Magazin und halbautomatischem Feuer.',
-      'Wechseln mit 1/2 oder Mausrad, kurze Wechsel-Animation statt Aufploppen.',
-      'Waffen-Silhouetten unten rechts zeigen die aktive Waffe, Munitions-Bogen (Fortnite-Stil) neben dem Fadenkreuz.',
       'Kleinere Slide-Bugfixes aus der letzten Runde mit eingeflossen.'
     ]
   }
