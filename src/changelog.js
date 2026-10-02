@@ -78,5 +78,13 @@ export const CHANGELOG = [
       'Neue Pistole mit eigenem Kimme-Korn-Visier, kleinerem Magazin und halbautomatischem Feuer.',
       'Kleinere Slide-Bugfixes aus der letzten Runde mit eingeflossen.'
     ]
+  },
+  {
+    date: '02.10.2026',
+    title: 'Lehnen (Q/E)',
+    items: [
+      'Seitliches Lehnen wie in Rainbow Six Siege: Q/E als Toggle für links/rechts.',
+      'Lugt man dabei nur mit dem Kopf um eine Deckung herum, werden Bots seltener treffen.'
+    ]
   }
 ];

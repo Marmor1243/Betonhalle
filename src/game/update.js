@@ -23,6 +23,10 @@ let slideTilt = 0;
 // in der Bildmitte, in ADS_EYE_Z Metern vor der Kamera - nicht die Waffe
 // selbst. Wird pro Frame neu berechnet, da jede Waffe ein eigenes Visier hat.
 const ADS_EYE_Z = -.28;
+// Lehnen (R6-artig): Augen/Kamera werden seitlich aus der Körperposition
+// herausgeschoben - P.x/P.z (Kollision, Bot-Zielpunkt "Körpermitte") bleiben
+// unverändert, nur der Spähpunkt (P.peekX/Z) verschiebt sich.
+const LEAN_DIST = .55, LEAN_ROLL = .42;
 
 export function update(dt) {
   S.time += dt;
@@ -100,13 +104,19 @@ export function update(dt) {
   else P.onGround = P.y - ground < .02 && P.vy <= 0;
   if (P.onGround && Math.hypot(P.vx, P.vz) > 2) { S.stepT -= dt * Math.hypot(P.vx, P.vz); if (S.stepT <= 0) { S.stepT = 2.6; sfx.step(); } }
 
+  // Lehnen: bricht ab bei Sprint/Sprung/Slide - ergibt nur stehend/laufend Sinn.
+  if (!P.onGround || sprint || P.sliding) P.lean = 0;
+  P.leanAmt = (P.leanAmt || 0) + ((P.lean || 0) - (P.leanAmt || 0)) * Math.min(1, dt * 12);
+  const leanX = rx * P.leanAmt * LEAN_DIST, leanZ = rz * P.leanAmt * LEAN_DIST;
+  P.peekX = P.x + leanX; P.peekZ = P.z + leanZ;
+
   // Rückstoß-Erholung
   const rec = Math.min(S.recoilRec, dt * .3); P.pitch -= rec; S.recoilRec -= rec;
   S.shake = Math.max(0, S.shake - dt * 3);
   const shakeAmt = S.shake * .04 * settings.shake;
   const eyeH = 1.6 - P.crouch * .6;
-  camera.position.set(P.x + rand(-1, 1) * shakeAmt, P.y + eyeH + rand(-1, 1) * shakeAmt, P.z);
-  camera.rotation.set(P.pitch, P.yaw, 0);
+  camera.position.set(P.x + leanX + rand(-1, 1) * shakeAmt, P.y + eyeH + rand(-1, 1) * shakeAmt, P.z + leanZ);
+  camera.rotation.set(P.pitch, P.yaw, -P.leanAmt * LEAN_ROLL);
 
   // Zielen (ADS-Zoom)
   const targetFov = S.ads ? adsFovFor(settings.fov) : settings.fov;
@@ -146,8 +156,16 @@ export function update(dt) {
   const so = activeSightOffset();
   const adsPos = { x: -so.x, y: -so.y, z: ADS_EYE_Z - so.z };
   const bx = gBase.x + (adsPos.x - gBase.x) * adsT, by = gBase.y + (adsPos.y - gBase.y) * adsT, bz = gBase.z + (adsPos.z - gBase.z) * adsT;
-  gunRoot.position.set(bx + Math.cos(S.bobT) * .012 * hs * steady + S.swayX * steady, by + Math.abs(Math.sin(S.bobT)) * .012 * hs * steady - rl * .12 + S.swayY * steady, bz + S.kick * .06 * kickSteady);
-  gunRoot.rotation.set(S.kick * .1 * kickSteady - rl * .7, (sprint ? .25 : 0) * (1 - adsT), rl * .4 + slideTilt * .35);
+  // Lehnen dreht die Waffe wie eine Schraube um die Achse durch den Visierpunkt,
+  // nicht um ihren eigenen Ursprung - sonst würde der rote Punkt beim Drehen
+  // aus der Bildmitte wegschwenken. Dafür wird die Positionsverschiebung, die
+  // die Rotation am Visierpunkt verursachen würde, exakt gegengerechnet.
+  const leanRot = -P.leanAmt * LEAN_ROLL;
+  const lcs = Math.cos(leanRot), lsn = Math.sin(leanRot);
+  const pivotCorrX = so.x - (so.x * lcs - so.y * lsn);
+  const pivotCorrY = so.y - (so.x * lsn + so.y * lcs);
+  gunRoot.position.set(bx + pivotCorrX + Math.cos(S.bobT) * .012 * hs * steady + S.swayX * steady, by + pivotCorrY + Math.abs(Math.sin(S.bobT)) * .012 * hs * steady - rl * .12 + S.swayY * steady, bz + S.kick * .06 * kickSteady);
+  gunRoot.rotation.set(S.kick * .1 * kickSteady - rl * .7, (sprint ? .25 : 0) * (1 - adsT), rl * .4 + slideTilt * .35 + leanRot);
 
   // Regeneration bis 60
   if (S.time - S.lastHurt > 5 && S.hp < 60) S.hp = Math.min(60, S.hp + 7 * dt);

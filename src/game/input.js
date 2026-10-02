@@ -26,6 +26,10 @@ addEventListener('keydown', e => {
     if (e.code === 'KeyR') startReload();
     if (e.code === 'Digit1') switchWeapon('rifle');
     if (e.code === 'Digit2') switchWeapon('pistol');
+    // Lehnen (Toggle): Q/E schaltet zwischen links/rechts/zentriert um -
+    // nochmal dieselbe Taste drücken geht zurück zur Mitte.
+    if (e.code === 'KeyQ') P.lean = P.lean === -1 ? 0 : -1;
+    if (e.code === 'KeyE') P.lean = P.lean === 1 ? 0 : 1;
     if (e.code === 'Tab') { e.preventDefault(); toggleBigMap(); }
     if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
     if ((e.code === 'Escape' || e.code === 'KeyP') && noLock) pause();

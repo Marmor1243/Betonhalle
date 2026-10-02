@@ -36,15 +36,15 @@ export function makeBot(x, z) {
     x, z, vx: 0, vz: 0, yaw: rand(-3, 3), targetYaw: 0, hp: S.diff.hp, dead: false, deathT: 0,
     sees: false, losT: rand(0, .2), react: 1, fireT: rand(.5, 1.2), strafeT: 0, strafeDir: 1,
     path: null, repath: 0, lastX: 0, lastZ: 0, memory: 0, flash: 0, flashT: 0, phase: rand(0, 6),
-    pref: rand(9, 19), name: 'RX-' + String(++botSerial).padStart(2, '0'), decor: false, burst: 0
+    pref: rand(9, 19), name: 'RX-' + String(++botSerial).padStart(2, '0'), decor: false, burst: 0, peeking: false
   };
   for (const m of bot.hit) m.userData.bot = bot;
   bots.push(bot);
   return bot;
 }
 
-function botLOS(b) {
-  const o = new V3(b.x, 1.7, b.z), t = new V3(P.x, P.y + 1.5 - P.crouch * .6, P.z);
+function losTo(b, x, y, z) {
+  const o = new V3(b.x, 1.7, b.z), t = new V3(x, y, z);
   const d = t.clone().sub(o), L = d.length(); d.divideScalar(L);
   return !traceWorld(o, d, L).hit;
 }
@@ -67,9 +67,18 @@ export function updateBot(b, dt) {
   b.losT -= dt;
   if (b.losT <= 0) {
     b.losT = rand(.1, .18);
-    const s = dist < 65 && botLOS(b);
+    const eyeY = P.y + 1.5 - P.crouch * .6;
+    const leaning = Math.abs(P.leanAmt) > .5;
+    const inRange = dist < 65;
+    const centerOk = inRange && losTo(b, P.x, eyeY, P.z);
+    // Nur wenn die Körpermitte GAR NICHT sichtbar ist (hinter Deckung), aber
+    // der seitlich herausgelehnte Spähpunkt doch - dann lugt man nur mit dem
+    // Kopf raus: kleinere, schwerer zu treffende Silhouette. Lehnt man im
+    // Freien (Körpermitte eh sichtbar), ändert sich nichts.
+    const peekOk = !centerOk && leaning && inRange && losTo(b, P.peekX, eyeY, P.peekZ);
+    const s = centerOk || peekOk;
     if (s && !b.sees) b.react = S.diff.react * rand(.7, 1.3);
-    b.sees = s;
+    b.sees = s; b.peeking = peekOk;
     if (s) { b.lastX = P.x; b.lastZ = P.z; b.memory = 4; }
   }
   if (!b.sees) b.memory -= dt;
@@ -129,9 +138,10 @@ function botShoot(b, dist) {
   const muzzle = b.g.localToWorld(new V3(.34, 1.2, .8));
   b.flashMesh.visible = true; b.flashT = .05;
   const pm = Math.hypot(P.vx, P.vz);
-  const chance = S.diff.acc * clamp(1.15 - dist / 45, .25, 1) * (pm > 7 ? .6 : pm > 1.5 ? .8 : 1) * (P.onGround ? 1 : .7) * (1 - P.crouch * .4);
+  const chance = S.diff.acc * clamp(1.15 - dist / 45, .25, 1) * (pm > 7 ? .6 : pm > 1.5 ? .8 : 1) * (P.onGround ? 1 : .7) * (1 - P.crouch * .4) * (b.peeking ? .5 : 1);
   const hit = Math.random() < chance;
-  const target = new V3(P.x, P.y + 1.2 - P.crouch * .6 + rand(-.3, .3), P.z);
+  const tx = b.peeking ? P.peekX : P.x, tz = b.peeking ? P.peekZ : P.z;
+  const target = new V3(tx, P.y + 1.2 - P.crouch * .6 + rand(-.3, .3), tz);
   if (!hit) target.add(new V3(rand(-1, 1), rand(-.4, .8), rand(-1, 1)).normalize().multiplyScalar(rand(.7, 1.8)));
   const dir = target.clone().sub(muzzle), L = dir.length(); dir.divideScalar(L);
   let end;
