@@ -2,7 +2,7 @@ import { $, isTouch } from '../core/utils.js';
 import { settings, onSettingsChange } from '../core/settings.js';
 import { canvas } from '../render/renderer.js';
 import { S, P } from './state.js';
-import { startReload } from './combat.js';
+import { startReload, meleeAttack } from './combat.js';
 import { pause, resumePlay } from './flow.js';
 import { toggleBigMap } from './minimap.js';
 import { switchWeapon } from './weapons.js';
@@ -24,6 +24,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (S.mode === 'play') {
     if (e.code === 'KeyR') startReload();
+    if (e.code === 'KeyF') meleeAttack();
     if (e.code === 'Digit1') switchWeapon('rifle');
     if (e.code === 'Digit2') switchWeapon('pistol');
     // Lehnen (Toggle): Q/E schaltet zwischen links/rechts/zentriert um -

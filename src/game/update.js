@@ -1,13 +1,13 @@
 import { V3, clamp, rand, isTouch } from '../core/utils.js';
 import { settings } from '../core/settings.js';
 import { scene, camera, muzzleLight } from '../render/scene.js';
-import { gunRoot, gBase, activeFlash, activeSightOffset, tickWeaponSwitch } from '../render/weapon.js';
+import { gunRoot, gBase, activeFlash, activeSightOffset, tickWeaponSwitch, setMeleeHiding, knifeGroup, KNIFE_START, KNIFE_PEAK, armGroup, updateArmIK } from '../render/weapon.js';
 import { resolveCircle } from '../world/collision.js';
 import { emit } from '../render/particles.js';
 import { sfx } from '../core/audio.js';
 import { S, P, startWave, spawnBot, aliveCount } from './state.js';
 import { keys, joy, mouseDown, touchFire, aimHeld, consumeMouseDelta } from './input.js';
-import { fire, startReload } from './combat.js';
+import { fire, startReload, resolveMeleeHit, MELEE_DUR } from './combat.js';
 import { currentWeapon } from './weapons.js';
 import { bots, updateBot } from './bots.js';
 import { pickups } from './pickups.js';
@@ -140,6 +140,23 @@ export function update(dt) {
   }
   if (S.flashT > 0) { S.flashT -= dt; if (S.flashT <= 0) activeFlash().visible = false; }
   muzzleLight.intensity = Math.max(0, muzzleLight.intensity - dt * 60);
+
+  // Messer-Stich: Waffe wird kurz weggesteckt (wie beim Waffenwechsel), Messer
+  // sticht zu, Waffe kommt danach wieder hoch - trifft genau im Scheitelpunkt
+  // der Stoßbewegung.
+  S.meleeCd = Math.max(0, (S.meleeCd || 0) - dt);
+  if (S.meleeT > 0) {
+    S.meleeT -= dt;
+    const t = clamp(1 - S.meleeT / MELEE_DUR, 0, 1);
+    const s = Math.sin(t * Math.PI);
+    setMeleeHiding(t < .82);
+    knifeGroup.visible = true; armGroup.visible = true;
+    knifeGroup.position.lerpVectors(KNIFE_START, KNIFE_PEAK, s);
+    knifeGroup.rotation.x = -s * .5;
+    updateArmIK(knifeGroup.position);
+    if (!S.meleeHitDone && t >= .5) { S.meleeHitDone = true; resolveMeleeHit(); }
+    if (S.meleeT <= 0) { knifeGroup.visible = false; armGroup.visible = false; }
+  }
 
   // Viewmodel
   tickWeaponSwitch(dt);

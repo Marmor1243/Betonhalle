@@ -43,5 +43,6 @@ export const sfx = {
   empty() { noise(.02, 4000, 'highpass', .25); },
   pickup() { tone(500, 1000, .16, 'sine', .22); tone(750, 1500, .16, 'sine', .12, .08); },
   wave() { tone(220, 220, .35, 'sawtooth', .07); tone(330, 330, .35, 'sawtooth', .05, .12); },
-  step() { noise(.05, 300, 'lowpass', .06); }
+  step() { noise(.05, 300, 'lowpass', .06); },
+  melee() { noise(.09, 2600, 'bandpass', .35, 1.2); tone(900, 200, .08, 'sawtooth', .12); }
 };

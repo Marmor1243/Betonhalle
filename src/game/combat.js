@@ -14,6 +14,39 @@ import { currentWeapon } from './weapons.js';
 
 const raycaster = new THREE.Raycaster();
 
+// Messer: kurze Reichweite, hoher Schaden (faktisch ein Garantie-Kill) als
+// Belohnung/Rettung für den Mut, sich so nah an einen Gegner heranzutrauen.
+// Trifft in einem Kegel vor einem statt pixelgenau im Fadenkreuz - der Gegner
+// muss nur ungefähr vor einem stehen, nicht exakt anvisiert sein.
+export const MELEE_DUR = .4, MELEE_COOLDOWN = .7, MELEE_RANGE = 2.3, MELEE_DMG = 160;
+const MELEE_CONE_COS = Math.cos(45 * Math.PI / 180);
+
+export function meleeAttack() {
+  if (S.mode !== 'play' || S.meleeCd > 0) return;
+  S.meleeCd = MELEE_COOLDOWN; S.meleeT = MELEE_DUR; S.meleeHitDone = false;
+  sfx.melee();
+}
+
+export function resolveMeleeHit() {
+  camera.updateMatrixWorld();
+  const origin = camera.position.clone();
+  const fwd = new V3(0, 0, -1).applyQuaternion(camera.quaternion);
+  let best = null, bestDist = Infinity, bestDir = null;
+  for (const b of bots) {
+    if (b.dead || b.decor) continue;
+    const toBot = new V3(b.x - origin.x, 1.2 - origin.y, b.z - origin.z);
+    const dist = toBot.length();
+    if (dist > MELEE_RANGE) continue;
+    const dir = toBot.divideScalar(dist);
+    if (dir.dot(fwd) < MELEE_CONE_COS) continue;
+    if (traceWorld(origin, dir, dist).hit) continue;
+    if (dist < bestDist) { bestDist = dist; best = b; bestDir = dir; }
+  }
+  if (!best) return;
+  emit(origin.clone().addScaledVector(bestDir, bestDist), bestDir.clone().negate(), 14, 0xffb070, 4, .4);
+  damageBot(best, MELEE_DMG, false);
+}
+
 export function fire() {
   const wcfg = currentWeapon();
   S.fireCd = wcfg.fireCd; S.mag[S.weapon]--; S.shots++;
@@ -56,7 +89,7 @@ export function fire() {
   sfx.shot();
 }
 
-function damageBot(b, dmg, head) {
+export function damageBot(b, dmg, head) {
   b.hp -= dmg; b.flash = 1;
   b.lastX = P.x; b.lastZ = P.z; b.memory = 4;
   if (!b.sees) { b.targetYaw = Math.atan2(P.x - b.x, P.z - b.z); b.losT = 0; }

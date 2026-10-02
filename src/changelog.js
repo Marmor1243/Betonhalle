@@ -86,5 +86,13 @@ export const CHANGELOG = [
       'Seitliches Lehnen wie in Rainbow Six Siege: Q/E als Toggle für links/rechts.',
       'Lugt man dabei nur mit dem Kopf um eine Deckung herum, werden Bots seltener treffen.'
     ]
+  },
+  {
+    date: '02.10.2026',
+    title: 'Messerstich (F)',
+    items: [
+      'Schneller Nahkampf-Stoß mit hohem Schaden als Notfall-Option bei Gegnern in Reichweite.',
+      'Trifft großzügig in einem Kegel vor dir statt pixelgenau im Fadenkreuz.'
+    ]
   }
 ];
